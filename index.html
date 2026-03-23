@@ -11,8 +11,9 @@
 :root{--navy:#0B1728;--navy2:#152238;--blue:#1A4F8A;--accent:#2D7DD2;--gold:#C9A84C;--gold2:#E8C96E;--green:#1A7A4A;--green-light:#E8F5EE;--red:#C0392B;--red-light:#FDECEA;--amber:#D35400;--amber-light:#FEF3E8;--border:#2A3A52;--card:#13203A;--text:#E8EDF5;--text2:#9AAFC8;}
 body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden}
 .app{display:flex;min-height:100vh}
-.sidebar{width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sidebar{width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;overflow-y:auto;transition:transform 0.25s ease}
 .main{margin-left:240px;flex:1;min-height:100vh}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:#000000aa;z-index:150}
 .logo{padding:24px 24px 16px;border-bottom:1px solid var(--border)}
 .logo-text{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
 .logo-sub{font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
@@ -20,10 +21,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .db-dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .db-dot.live{background:var(--green);animation:pulse 2s infinite}
-.db-label{font-size:10px;color:var(--amber)}
-.db-label.live{color:var(--green)}
+.db-label{font-size:10px;color:var(--amber)}.db-label.live{color:var(--green)}
 .nav{padding:16px 12px;flex:1}
-.nav-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);padding:10px 12px 6px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:2px}
 .nav-item:hover{background:var(--card);color:var(--text)}
 .nav-item.active{background:linear-gradient(135deg,#1A4F8A22,#2D7DD222);color:var(--gold);border:1px solid #2D7DD230}
@@ -32,39 +31,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
 .user-pill{display:flex;align-items:center;gap:10px}
 .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
-.user-name{font-size:12px;font-weight:600;color:var(--text)}
-.user-role{font-size:10px;color:var(--text2)}
-.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.page-title{font-family:'DM Serif Display',serif;font-size:20px}
-.page-sub{font-size:12px;color:var(--text2);margin-top:1px}
-.topbar-right{display:flex;gap:10px;align-items:center}
-.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.user-name{font-size:12px;font-weight:600}.user-role{font-size:10px;color:var(--text2)}
+.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.menu-btn{display:none;background:transparent;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px}
+.page-title{font-family:'DM Serif Display',serif;font-size:18px}
+.page-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--blue));color:#fff}
-.btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-primary:hover{opacity:0.9}.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
 .btn-ghost:hover{border-color:var(--accent);color:var(--text)}
 .btn-danger{background:transparent;color:var(--red);border:1px solid #C0392B44}
 .btn-danger:hover{background:var(--red-light)}
-.btn-sm{padding:5px 12px;font-size:11px;border-radius:6px}
-.content{padding:28px}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.btn-success{background:var(--green);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+.content{padding:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
 .stat-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
-.stat-value{font-family:'DM Serif Display',serif;font-size:30px;color:var(--text);line-height:1}
+.stat-value{font-family:'DM Serif Display',serif;font-size:28px;line-height:1}
 .stat-sub{font-size:11px;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block}
-.stat-sub.up{background:var(--green-light);color:var(--green)}
-.stat-sub.amber{background:var(--amber-light);color:var(--amber)}
-.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.sec-title{font-family:'DM Serif Display',serif;font-size:17px}
+.stat-sub.up{background:var(--green-light);color:var(--green)}.stat-sub.amber{background:var(--amber-light);color:var(--amber)}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-family:'DM Serif Display',serif;font-size:16px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:14px}
-.card-body{padding:18px}
-.table{width:100%;border-collapse:collapse}
-.table th{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border)}
-.table td{padding:11px 14px;border-bottom:1px solid #1E2F48;font-size:13px;vertical-align:middle}
-.table tr:last-child td{border-bottom:none}
-.table tr:hover td{background:#ffffff04}
+.card-head{padding:13px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:16px}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table{width:100%;border-collapse:collapse;min-width:500px}
+.table th{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.table td{padding:10px 12px;border-bottom:1px solid #1E2F48;font-size:13px;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}.table tr:hover td{background:#ffffff04}
 .tag{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .tag-blue{background:#1A4F8A22;color:#5B9FE0;border:1px solid #1A4F8A44}
 .tag-green{background:var(--green-light);color:var(--green)}
@@ -72,99 +71,468 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .tag-gold{background:#C9A84C18;color:var(--gold2);border:1px solid #C9A84C33}
 .tag-muted{background:#ffffff0f;color:var(--text2)}
 .tag-red{background:var(--red-light);color:var(--red)}
-.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
 .p-col{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
 .p-col-head{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.p-count{background:var(--navy2);color:var(--text);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
+.p-count{background:var(--navy2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
 .deal-chip{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px;cursor:pointer;transition:all 0.15s}
-.deal-chip:hover{border-color:var(--accent);transform:translateY(-1px)}
-.dc-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+.deal-chip:hover{border-color:var(--accent)}
+.dc-title{font-size:12px;font-weight:600;margin-bottom:3px}
 .dc-meta{font-size:11px;color:var(--text2)}
 .dc-price{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);margin-top:4px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.fg{display:flex;flex-direction:column;gap:5px}
-.fg.full{grid-column:1/-1}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}
 .fl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:500}
 .fi{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;width:100%}
-.fi:focus{border-color:var(--accent)}
-.fi option{background:var(--navy2)}
-.fi-ta{resize:vertical;min-height:75px}
-.match-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.viewing-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:9px;display:flex;align-items:center;gap:14px}
-.vdate{border-radius:8px;padding:7px 10px;text-align:center;min-width:48px;background:var(--accent)}
+.fi:focus{border-color:var(--accent)}.fi option{background:var(--navy2)}.fi-ta{resize:vertical;min-height:75px}
+.match-row{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;cursor:pointer;transition:all 0.15s}
+.match-row:hover{border-color:var(--accent)}
+.match-row.selected{border-color:var(--green);background:#1A7A4A15}
+.match-checkbox{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.viewing-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:9px;display:flex;align-items:center;gap:12px}
+.vdate{border-radius:8px;padding:7px 10px;text-align:center;min-width:46px}
 .vday{font-family:'DM Serif Display',serif;font-size:20px;color:#fff;line-height:1}
 .vmon{font-size:9px;color:#ffffffaa;text-transform:uppercase;letter-spacing:1px}
-.vinfo{flex:1}
-.vtitle{font-size:13px;font-weight:600}
+.vinfo{flex:1;min-width:0}
+.vtitle{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vsub{font-size:11px;color:var(--text2);margin-top:1px}
 .progress-bar{height:4px;background:#ffffff10;border-radius:2px;overflow:hidden;margin-top:6px}
 .progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--gold))}
-.flow{display:flex;align-items:center;flex-wrap:wrap;gap:0}
-.f-step{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:11px;font-weight:600;text-align:center}
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.f-step{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:11px;font-weight:600;text-align:center}
 .f-step.done{border-color:var(--green);color:var(--green);background:var(--green-light)}
 .f-step.active{border-color:var(--gold);color:var(--gold);background:#C9A84C12}
-.f-arrow{color:var(--accent);padding:0 5px;font-size:16px}
+.f-arrow{color:var(--accent);font-size:14px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .screen{animation:fadeIn 0.2s ease}
-.empty{text-align:center;padding:40px;color:var(--text2)}
-.empty .ico{font-size:36px;margin-bottom:10px}
+.empty{text-align:center;padding:36px;color:var(--text2)}
+.empty .ico{font-size:32px;margin-bottom:10px}
 .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;gap:14px;color:var(--text2)}
-#toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px}
+#toast-wrap{position:fixed;bottom:20px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px}
 .toast{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;animation:fadeIn 0.2s ease;max-width:280px}
-.toast.ok{border-color:var(--green);color:var(--green)}
-.toast.err{border-color:var(--red);color:var(--red)}
-#modal-wrap{position:fixed;inset:0;background:#000000bb;z-index:200;display:flex;align-items:center;justify-content:center}
-.modal{background:var(--navy2);border:1px solid var(--border);border-radius:14px;padding:24px;width:480px;max-height:88vh;overflow-y:auto}
+.toast.ok{border-color:var(--green);color:var(--green)}.toast.err{border-color:var(--red);color:var(--red)}.toast.info{border-color:var(--accent);color:var(--accent)}
+#modal-wrap{position:fixed;inset:0;background:#000000bb;z-index:300;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--navy2);border:1px solid var(--border);border-radius:14px 14px 0 0;padding:24px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto}
 .modal-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:18px}
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.send-log{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px;height:150px;overflow-y:auto;font-family:'DM Mono',monospace;font-size:11px;margin-top:12px}
+.send-log-line{margin-bottom:4px;line-height:1.5}
+.send-log-line.ok{color:#4CAF81}.send-log-line.err{color:#E57373}.send-log-line.info{color:var(--accent)}
+.select-all-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:12px;color:var(--text2)}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy2);border-top:1px solid var(--border);z-index:190;padding:8px 0 env(safe-area-inset-bottom,0px)}
+.bottom-nav-items{display:flex;justify-content:space-around}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer;color:var(--text2);font-size:10px;font-weight:500;min-width:48px}
+.bn-item.active{color:var(--gold)}.bn-icon{font-size:18px}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.open{display:block}.main{margin-left:0;padding-bottom:70px}
+  .menu-btn{display:block}.stats-grid{grid-template-columns:1fr 1fr}
+  .pipeline{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}
+  .form-grid-3{grid-template-columns:1fr 1fr}.fg.full{grid-column:1/-1}
+  .hide-mobile{display:none}.bottom-nav{display:block}
+  .topbar-right .btn-ghost:not(.keep){display:none}
+  .modal{border-radius:14px 14px 0 0;max-height:88vh}
+}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:1fr}.content{padding:14px}.topbar{padding:0 14px}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="app" id="app"></div>
 <div id="toast-wrap"></div>
 <script>
 const SB_URL='https://ntjifzhrhazybrqozkih.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50amlmemhyaGF6eWJycW96a2loIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNjg0NjYsImV4cCI6MjA4OTg0NDQ2Nn0.nA0WOhuBnA4yBz2Dz61ByjCK8xf_v3WVWpOvwZX-YoQ';
+const FROM_EMAIL='deals@propmatch.network';
+const REPLY_TO='snayder@nestseekers.com';
 const sb=supabase.createClient(SB_URL,SB_KEY);
-const S={screen:'dashboard',deals:[],investors:[],viewings:[],matchResult:null,loading:true,dbLive:false,newDeal:{title:'',asset_type:'',location:'',country:'',price:'',min_investment:'',expected_yield:'',target_irr:'',deal_stage:'',finance_type:'',summary:''}};
+
+const S={screen:'dashboard',deals:[],investors:[],viewings:[],matchResult:null,loading:true,dbLive:false,editDeal:null,editInvestor:null,
+newDeal:{title:'',asset_type:'',location:'',country:'',price:'',min_investment:'',expected_yield:'',target_irr:'',deal_stage:'',finance_type:'',summary:''}};
+
+// ── SIDEBAR ───────────────────────────────────────────────────────
+function openSidebar(){document.querySelector('.sidebar')?.classList.add('open');document.getElementById('overlay').classList.add('open');}
+function closeSidebar(){document.querySelector('.sidebar')?.classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+// ── EMAIL via Netlify Function ────────────────────────────────────
+function buildEmailHTML(deal,investor){
+  const price=deal.price?'£'+Number(deal.price).toLocaleString():'—';
+  const yld=deal.expected_yield?deal.expected_yield+'%':'—';
+  const irr=deal.target_irr?deal.target_irr+'%':'—';
+  const firstName=investor.name.split(' ')[0];
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:32px 0"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)"><tr><td style="background:#0B1728;padding:24px 28px"><div style="font-family:Georgia,serif;font-size:20px;color:#C9A84C">PropMatch Network</div><div style="font-size:10px;color:#9AAFC8;letter-spacing:2px;text-transform:uppercase;margin-top:4px">New Deal Alert</div></td></tr><tr><td style="padding:28px"><p style="font-size:15px;color:#1A1A2E;margin:0 0 14px">Hi ${firstName},</p><p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 20px">I wanted to share a new opportunity that matches your investment profile.</p><div style="background:#F8F9FF;border-left:4px solid #2D7DD2;border-radius:6px;padding:14px 16px;margin-bottom:20px"><div style="font-family:Georgia,serif;font-size:18px;color:#0B1728;margin-bottom:4px">${deal.title}</div><div style="font-size:12px;color:#888">${deal.location||''}${deal.country?', '+deal.country:''} · ${deal.asset_type||''} · ${deal.deal_stage||''}</div></div><table width="100%" cellpadding="0" cellspacing="4" style="margin-bottom:20px"><tr><td width="23%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Price</div><div style="font-family:Georgia,serif;font-size:15px;color:#0B1728;font-weight:bold">${price}</div></td><td width="4%"></td><td width="23%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Yield</div><div style="font-family:Georgia,serif;font-size:15px;color:#1A7A4A;font-weight:bold">${yld}</div></td><td width="4%"></td><td width="23%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">IRR</div><div style="font-family:Georgia,serif;font-size:15px;color:#1A4F8A;font-weight:bold">${irr}</div></td><td width="4%"></td><td width="23%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Finance</div><div style="font-family:Georgia,serif;font-size:13px;color:#0B1728;font-weight:bold">${deal.finance_type||'Flexible'}</div></td></tr></table>${deal.summary?`<p style="font-size:14px;color:#444;line-height:1.7;margin:0 0 20px">${deal.summary}</p>`:''}<div style="background:#0B1728;border-radius:10px;padding:18px;text-align:center;margin-bottom:20px"><p style="color:#E8EDF5;font-size:14px;margin:0 0 12px">If this is of interest, reply <strong style="color:#C9A84C">YES</strong> to this email.</p><a href="mailto:${REPLY_TO}?subject=YES - ${deal.title}" style="background:linear-gradient(135deg,#2D7DD2,#1A4F8A);color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Reply YES →</a></div></td></tr><tr><td style="background:#F8F9FF;padding:16px 28px;border-top:1px solid #eee"><div style="font-size:13px;color:#333;font-weight:600">Snayder Andrade</div><div style="font-size:11px;color:#888">Nest Seekers International · The Property Source Group Ltd</div><div style="font-size:11px;color:#2D7DD2;margin-top:2px">${REPLY_TO}</div><div style="font-size:10px;color:#bbb;margin-top:8px">© PropMatch Network · <a href="mailto:${REPLY_TO}?subject=Unsubscribe" style="color:#bbb">Unsubscribe</a></div></td></tr></table></td></tr></table></body></html>`;
+}
+
+async function sendViaFunction(to,toName,subject,html){
+  const res=await fetch('/.netlify/functions/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to,toName,subject,html})});
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.error||'Send failed');
+  return data;
+}
+
+async function distributeEmails(dealId,selected){
+  const deal=S.deals.find(d=>d.id===dealId); if(!deal) return;
+  showModal(`<div class="modal-title">✉ Sending Deal Alert</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Deal: <strong style="color:var(--text)">${deal.title}</strong></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Sending to ${selected.length} selected investors from ${FROM_EMAIL}</div>
+    <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span id="spl">Preparing...</span><span id="spp">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="sp" style="width:0%"></div></div></div>
+    <div class="send-log" id="send-log"></div>
+    <div style="margin-top:14px"><button class="btn btn-ghost" id="cls-btn" onclick="closeModal();fetchAll();render()" disabled>Close</button></div>`);
+  function log(msg,type='info'){const el=document.getElementById('send-log');if(!el)return;const d=document.createElement('div');d.className='send-log-line '+type;d.textContent='['+new Date().toLocaleTimeString()+'] '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+  let sent=0,failed=0;
+  log('Starting send to '+selected.length+' investors...','info');
+  for(let i=0;i<selected.length;i++){
+    const inv=selected[i];
+    if(!inv.email){log('⚠ Skipped '+inv.name+' — no email on file','err');failed++;}
+    else{
+      try{
+        const subject='New Deal Alert — '+deal.title+(deal.location?' | '+deal.location:'');
+        await sendViaFunction(inv.email,inv.name,subject,buildEmailHTML(deal,inv));
+        sent++;log('✓ Sent to '+inv.name+' ('+inv.email+')','ok');
+      }catch(e){failed++;log('✗ Failed '+inv.name+': '+e.message,'err');}
+    }
+    const pct=Math.round(((i+1)/selected.length)*100);
+    const sp=document.getElementById('sp');const spp=document.getElementById('spp');const spl=document.getElementById('spl');
+    if(sp)sp.style.width=pct+'%';if(spp)spp.textContent=pct+'%';if(spl)spl.textContent=(i+1)+' of '+selected.length;
+    await new Promise(r=>setTimeout(r,300));
+  }
+  log('Complete. '+sent+' sent, '+failed+' failed.', sent>0?'ok':'err');
+  const cb=document.getElementById('cls-btn');if(cb)cb.disabled=false;
+  if(sent>0){await updateDealStatus(dealId,'Distributed',sent);toast('✉ '+sent+' emails sent','ok');}
+}
+
+// ── SUPABASE ──────────────────────────────────────────────────────
 async function fetchAll(){S.loading=true;render();const[d,i,v]=await Promise.all([sb.from('deals').select('*').order('created_at',{ascending:false}),sb.from('investors').select('*').order('created_at',{ascending:false}),sb.from('viewings').select('*').order('viewing_date',{ascending:true})]);S.deals=d.data||[];S.investors=i.data||[];S.viewings=v.data||[];S.dbLive=!d.error&&!i.error;S.loading=false;render();}
 async function saveDeal(deal){const{data,error}=await sb.from('deals').insert([deal]).select();if(error){toast('Error: '+error.message,'err');return null;}toast('Deal saved ✓','ok');return data[0];}
+async function updateDeal(id,deal){const{error}=await sb.from('deals').update(deal).eq('id',id);if(error){toast('Error: '+error.message,'err');return false;}toast('Deal updated ✓','ok');return true;}
 async function deleteDeal(id){await sb.from('deals').delete().eq('id',id);toast('Deleted','ok');await fetchAll();}
 async function saveInvestor(inv){const{data,error}=await sb.from('investors').insert([inv]).select();if(error){toast('Error: '+error.message,'err');return null;}toast('Investor added ✓','ok');return data[0];}
+async function updateInvestor(id,inv){const{error}=await sb.from('investors').update(inv).eq('id',id);if(error){toast('Error: '+error.message,'err');return false;}toast('Investor updated ✓','ok');return true;}
 async function deleteInvestor(id){await sb.from('investors').delete().eq('id',id);toast('Removed','ok');await fetchAll();}
 async function saveViewing(v){const{data,error}=await sb.from('viewings').insert([v]).select();if(error){toast('Error: '+error.message,'err');return null;}toast('Viewing scheduled ✓','ok');return data[0];}
 async function updateViewing(id,status){await sb.from('viewings').update({status}).eq('id',id);await fetchAll();}
 async function updateDealStatus(id,status,investors_matched){const u={status};if(investors_matched!==undefined)u.investors_matched=investors_matched;await sb.from('deals').update(u).eq('id',id);await fetchAll();}
+
+// ── MATCHING ──────────────────────────────────────────────────────
 function matchInvestors(deal){return S.investors.filter(inv=>{if(inv.status!=='Active')return false;const assets=Array.isArray(inv.asset_preference)?inv.asset_preference:(inv.asset_preference||'').split(',').map(s=>s.trim()).filter(Boolean);const geos=Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean);if(deal.asset_type&&assets.length&&!assets.some(a=>a.toLowerCase().includes(deal.asset_type.toLowerCase())||deal.asset_type.toLowerCase().includes(a.toLowerCase())))return false;if(deal.country&&geos.length&&!geos.some(g=>g.toLowerCase().includes(deal.country.toLowerCase())||deal.country.toLowerCase().includes(g.toLowerCase())))return false;const price=parseFloat(deal.price)||0;if(price&&inv.min_investment&&price<inv.min_investment)return false;if(price&&inv.max_investment&&price>inv.max_investment)return false;const yld=parseFloat(deal.expected_yield)||0;if(yld&&inv.min_yield&&yld<inv.min_yield)return false;return true;});}
+
+// ── HELPERS ───────────────────────────────────────────────────────
 const fmt=n=>n?'£'+Number(n).toLocaleString():'—';
 function tagCls(s){return{New:'tag-amber',Matched:'tag-gold',Distributed:'tag-blue',Viewing:'tag-green',Completed:'tag-muted',Active:'tag-green',Paused:'tag-amber','Do Not Contact':'tag-red',Confirmed:'tag-green',Pending:'tag-amber','Slots Requested':'tag-muted'}[s]||'tag-muted';}
 function fmtDate(d){if(!d)return{day:'—',mon:'—'};const dt=new Date(d);return{day:dt.getDate(),mon:dt.toLocaleString('default',{month:'short'}).toUpperCase()};}
-function initials(name){return(name||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();}
-function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;document.getElementById('toast-wrap').appendChild(el);setTimeout(()=>el.remove(),3000);}
+function initials(n){return(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();}
+function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;document.getElementById('toast-wrap').appendChild(el);setTimeout(()=>el.remove(),4000);}
 function closeModal(){const m=document.getElementById('modal-wrap');if(m)m.remove();}
-function showModal(html){const d=document.createElement('div');d.id='modal-wrap';d.innerHTML='<div class="modal">'+html+'</div>';d.addEventListener('click',e=>{if(e.target===d)closeModal();});document.body.appendChild(d);}
-function renderSidebar(){const newD=S.deals.filter(d=>d.status==='New').length;const pendV=S.viewings.filter(v=>v.status==='Pending').length;const nav=[{id:'dashboard',ico:'◈',lbl:'Dashboard'},{id:'deals',ico:'◉',lbl:'Deal Pipeline',badge:newD||null},{id:'form',ico:'✦',lbl:'Add New Deal'},{id:'investors',ico:'◎',lbl:'Investor DB'},{id:'matching',ico:'⟡',lbl:'Match & Distribute'},{id:'viewings',ico:'◷',lbl:'Viewing Scheduler',badge:pendV||null}];return'<div class="sidebar"><div class="logo"><div class="logo-text">PropMatch</div><div class="logo-sub">Network</div><div class="db-indicator"><div class="db-dot '+(S.dbLive?'live':'')+'"></div><div class="db-label '+(S.dbLive?'live':'')+'">'+( S.dbLive?'Supabase Live':'Connecting...')+'</div></div></div><nav class="nav">'+nav.map(n=>'<div class="nav-item '+(S.screen===n.id?'active':'')+'" onclick="nav(\''+n.id+'\')"><span class="nav-icon">'+n.ico+'</span>'+n.lbl+(n.badge?'<span class="nav-badge">'+n.badge+'</span>':'')+'</div>').join('')+'</nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar">SA</div><div><div class="user-name">Snayder Andrade</div><div class="user-role">Property Source Group</div></div></div></div></div>';}
-function renderDashboard(){const confirmed=S.viewings.filter(v=>v.status==='Confirmed').length;const pending=S.viewings.filter(v=>v.status==='Pending').length;const totalMatched=S.deals.reduce((a,d)=>a+(d.investors_matched||0),0);return'<div class="screen"><div class="topbar"><div><div class="page-title">Dashboard</div><div class="page-sub">'+S.investors.length+' investors · '+S.deals.length+' deals · Live</div></div><div class="topbar-right"><button class="btn btn-ghost" onclick="fetchAll()">↻</button><button class="btn btn-ghost" onclick="nav(\'investors\')">+ Investor</button><button class="btn btn-primary" onclick="nav(\'form\')">+ New Deal</button></div></div><div class="content"><div class="stats-grid"><div class="stat-card"><div class="stat-label">Active Deals</div><div class="stat-value">'+S.deals.length+'</div><div class="stat-sub up">Live from DB</div></div><div class="stat-card"><div class="stat-label">Investor Database</div><div class="stat-value">'+S.investors.length+'</div><div class="stat-sub up">Ready for matching</div></div><div class="stat-card"><div class="stat-label">Viewings Confirmed</div><div class="stat-value">'+confirmed+'</div><div class="stat-sub amber">'+pending+' pending</div></div><div class="stat-card"><div class="stat-label">Total Matched</div><div class="stat-value">'+totalMatched+'</div><div class="stat-sub up">Across all deals</div></div></div><div class="sec-header"><div class="sec-title">Deal Pipeline</div><button class="btn btn-ghost btn-sm" onclick="nav(\'deals\')">View all →</button></div><div class="pipeline">'+['New','Matched','Distributed','Viewing'].map(status=>'<div class="p-col"><div class="p-col-head"><span>'+status+'</span><span class="p-count">'+S.deals.filter(d=>d.status===status).length+'</span></div>'+S.deals.filter(d=>d.status===status).map(d=>'<div class="deal-chip"><div class="dc-title">'+d.title+'</div><div class="dc-meta">'+(d.location||'')+(d.country?', '+d.country:'')+'</div><div class="dc-price">'+fmt(d.price)+'</div></div>').join('')+'</div>').join('')+'</div>'+(S.viewings.length?'<div class="sec-header"><div class="sec-title">Upcoming Viewings</div><button class="btn btn-ghost btn-sm" onclick="nav(\'viewings\')">View all →</button></div><div class="card"><div class="card-body" style="padding:12px 16px">'+S.viewings.slice(0,3).map(v=>{const{day,mon}=fmtDate(v.viewing_date);return'<div class="viewing-card"><div class="vdate"><div class="vday">'+day+'</div><div class="vmon">'+mon+'</div></div><div class="vinfo"><div class="vtitle">'+v.deal_title+'</div><div class="vsub">'+v.investor_name+' · '+(v.viewing_time||'')+'</div></div><span class="tag '+tagCls(v.status)+'">'+v.status+'</span></div>';}).join('')+'</div></div>':'')+'</div></div>';}
-function renderDeals(){return'<div class="screen"><div class="topbar"><div><div class="page-title">Deal Pipeline</div><div class="page-sub">'+S.deals.length+' deals</div></div><div class="topbar-right"><button class="btn btn-ghost" onclick="fetchAll()">↻ Refresh</button><button class="btn btn-primary" onclick="nav(\'form\')">+ New Deal</button></div></div><div class="content">'+(S.deals.length===0?'<div class="card"><div class="empty"><div class="ico">◉</div><p>No deals yet.</p><br/><button class="btn btn-primary" onclick="nav(\'form\')">+ Add Deal</button></div></div>':'<div class="card"><table class="table"><thead><tr><th>Deal</th><th>Type</th><th>Location</th><th>Price</th><th>Yield</th><th>Stage</th><th>Status</th><th>Matched</th><th></th></tr></thead><tbody>'+S.deals.map(d=>'<tr><td style="font-weight:600">'+d.title+'</td><td><span class="tag tag-blue">'+(d.asset_type||'—')+'</span></td><td style="color:var(--text2);font-size:12px">'+(d.location||'')+(d.country?', '+d.country:'')+'</td><td style="font-family:\'DM Mono\',monospace;color:var(--gold);font-size:12px">'+fmt(d.price)+'</td><td style="color:var(--green);font-weight:600">'+(d.expected_yield||0)+'%</td><td><span class="tag tag-muted">'+(d.deal_stage||'—')+'</span></td><td><span class="tag '+tagCls(d.status)+'">'+d.status+'</span></td><td style="text-align:center;font-weight:700">'+(d.investors_matched||0)+'</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="nav(\'matching\')">Match</button><button class="btn btn-danger btn-sm" onclick="if(confirm(\'Delete?\'))deleteDeal(\''+d.id+'\')">✕</button></td></tr>').join('')+'</tbody></table></div>')+'</div></div>';}
-function renderForm(){const d=S.newDeal;const m=S.matchResult;return'<div class="screen"><div class="topbar"><div><div class="page-title">Add New Deal</div><div class="page-sub">Saved to Supabase</div></div></div><div class="content"><div style="display:grid;grid-template-columns:1fr 360px;gap:20px"><div><div class="card" style="margin-bottom:16px"><div class="card-head">Deal Details</div><div class="card-body"><div class="form-grid"><div class="fg full"><label class="fl">Deal Title *</label><input class="fi" id="f-title" placeholder="e.g. Florence Hotel Portfolio" value="'+d.title+'"/></div><div class="fg"><label class="fl">Asset Type</label><select class="fi" id="f-type"><option value="">Select</option>'+['Residential','Hospitality','Commercial','Mixed-Use','Land','PBSA','BTR'].map(t=>'<option '+(d.asset_type===t?'selected':'')+'>'+t+'</option>').join('')+'</select></div><div class="fg"><label class="fl">Deal Stage</label><select class="fi" id="f-stage"><option value="">Select</option>'+['Off-Market','Exclusive','Under Offer','Open Market'].map(t=>'<option '+(d.deal_stage===t?'selected':'')+'>'+t+'</option>').join('')+'</select></div><div class="fg"><label class="fl">City</label><input class="fi" id="f-loc" placeholder="e.g. Florence" value="'+d.location+'"/></div><div class="fg"><label class="fl">Country</label><select class="fi" id="f-country"><option value="">Select</option>'+['UK','Italy','Germany','Spain','Portugal','Switzerland','Europe','Ireland'].map(t=>'<option '+(d.country===t?'selected':'')+'>'+t+'</option>').join('')+'</select></div></div></div></div><div class="card" style="margin-bottom:16px"><div class="card-head">Financials</div><div class="card-body"><div class="form-grid-3"><div class="fg"><label class="fl">Price (£)</label><input class="fi" id="f-price" type="number" placeholder="4200000" value="'+d.price+'"/></div><div class="fg"><label class="fl">Yield (%)</label><input class="fi" id="f-yield" type="number" placeholder="6.2" value="'+d.expected_yield+'"/></div><div class="fg"><label class="fl">IRR (%)</label><input class="fi" id="f-irr" type="number" placeholder="22" value="'+d.target_irr+'"/></div><div class="fg"><label class="fl">Min Investment (£)</label><input class="fi" id="f-mininv" type="number" placeholder="500000" value="'+d.min_investment+'"/></div><div class="fg"><label class="fl">Finance</label><select class="fi" id="f-finance"><option value="">Select</option>'+['Cash','Bridging','Refinance','Structured','Flexible'].map(t=>'<option '+(d.finance_type===t?'selected':'')+'>'+t+'</option>').join('')+'</select></div></div></div></div><div class="card"><div class="card-head">Summary</div><div class="card-body"><div class="fg"><label class="fl">Executive Summary</label><textarea class="fi fi-ta" id="f-summary" placeholder="2-4 sentence overview...">'+d.summary+'</textarea></div><div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-primary" onclick="runMatchForm()">⟡ Match Investors</button><button class="btn btn-ghost" onclick="submitDeal()">Save to Supabase</button></div></div></div></div><div><div class="card"><div class="card-head">Live Match Preview</div><div class="card-body">'+(m===null?'<div class="empty" style="padding:32px 0"><div class="ico">⟡</div><p style="font-size:12px">Fill in deal details then click Match Investors</p></div>':'<div><div style="font-family:\'DM Serif Display\',serif;font-size:44px;color:var(--gold)">'+m.length+'</div><div style="color:var(--text2);font-size:13px">investors match</div><div class="progress-bar"><div class="progress-fill" style="width:'+(S.investors.length?Math.min(m.length/S.investors.length*100,100):0)+'%"></div></div><div style="font-size:11px;color:var(--text2);margin:6px 0 14px">'+S.investors.length+' total in database</div>'+(m.length===0?'<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">No matches.</div>':m.map(inv=>'<div class="match-row"><div><div style="font-weight:600;font-size:13px">'+inv.name+'</div><div style="font-size:11px;color:var(--text2)">'+(inv.investor_type||'')+'</div></div><span class="tag tag-green">✓</span></div>').join(''))+(m.length>0?'<button class="btn btn-primary" style="width:100%;margin-top:14px">✉ Distribute to '+m.length+'</button>':'')+'</div>')+'</div></div></div></div></div></div>';}
-function readForm(){return{title:document.getElementById('f-title')?.value.trim()||'',asset_type:document.getElementById('f-type')?.value||'',deal_stage:document.getElementById('f-stage')?.value||'',location:document.getElementById('f-loc')?.value.trim()||'',country:document.getElementById('f-country')?.value||'',price:parseFloat(document.getElementById('f-price')?.value)||null,expected_yield:parseFloat(document.getElementById('f-yield')?.value)||null,target_irr:parseFloat(document.getElementById('f-irr')?.value)||null,min_investment:parseFloat(document.getElementById('f-mininv')?.value)||null,finance_type:document.getElementById('f-finance')?.value||'',summary:document.getElementById('f-summary')?.value.trim()||''};}
-function runMatchForm(){S.matchResult=matchInvestors(readForm());render();}
+function showModal(html){closeModal();const d=document.createElement('div');d.id='modal-wrap';d.innerHTML='<div class="modal">'+html+'</div>';d.addEventListener('click',e=>{if(e.target===d)closeModal();});document.body.appendChild(d);}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────
+function renderSidebar(){
+  const nav=[{id:'dashboard',ico:'◈',lbl:'Dashboard'},{id:'deals',ico:'◉',lbl:'Deals',badge:S.deals.filter(d=>d.status==='New').length||null},{id:'form',ico:'✦',lbl:'Add Deal'},{id:'investors',ico:'◎',lbl:'Investors'},{id:'matching',ico:'⟡',lbl:'Match & Send'},{id:'viewings',ico:'◷',lbl:'Viewings',badge:S.viewings.filter(v=>v.status==='Pending').length||null}];
+  return`<div class="sidebar" id="sidebar"><div class="logo"><div class="logo-text">PropMatch</div><div class="logo-sub">Network</div><div class="db-indicator"><div class="db-dot ${S.dbLive?'live':''}"></div><div class="db-label ${S.dbLive?'live':''}">${S.dbLive?'Supabase Live':'Connecting...'}</div></div></div><nav class="nav">${nav.map(n=>`<div class="nav-item ${S.screen===n.id?'active':''}" onclick="go('${n.id}');closeSidebar()"><span class="nav-icon">${n.ico}</span>${n.lbl}${n.badge?`<span class="nav-badge">${n.badge}</span>`:''}</div>`).join('')}</nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar">SA</div><div><div class="user-name">Snayder Andrade</div><div class="user-role">Property Source Group</div></div></div></div></div>`;
+}
+function renderBottomNav(){
+  const nav=[{id:'dashboard',ico:'◈',lbl:'Home'},{id:'deals',ico:'◉',lbl:'Deals'},{id:'form',ico:'✦',lbl:'Add'},{id:'matching',ico:'⟡',lbl:'Match'},{id:'viewings',ico:'◷',lbl:'Viewings'}];
+  return`<div class="bottom-nav"><div class="bottom-nav-items">${nav.map(n=>`<div class="bn-item ${S.screen===n.id?'active':''}" onclick="go('${n.id}')"><span class="bn-icon">${n.ico}</span><span>${n.lbl}</span></div>`).join('')}</div></div>`;
+}
+function topbar(title,sub,actions=''){return`<div class="topbar"><div class="topbar-left"><button class="menu-btn" onclick="openSidebar()">☰</button><div><div class="page-title">${title}</div>${sub?`<div class="page-sub">${sub}</div>`:''}</div></div><div class="topbar-right">${actions}</div></div>`;}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard(){
+  const confirmed=S.viewings.filter(v=>v.status==='Confirmed').length;
+  const pending=S.viewings.filter(v=>v.status==='Pending').length;
+  const totalSent=S.deals.reduce((a,d)=>a+(d.investors_matched||0),0);
+  return`<div class="screen">${topbar('Dashboard',S.investors.length+' investors · '+S.deals.length+' deals',`<button class="btn btn-ghost keep" onclick="fetchAll()">↻</button><button class="btn btn-primary" onclick="go('form')">+ Deal</button>`)}<div class="content"><div class="stats-grid"><div class="stat-card"><div class="stat-label">Deals</div><div class="stat-value">${S.deals.length}</div><div class="stat-sub up">Live</div></div><div class="stat-card"><div class="stat-label">Investors</div><div class="stat-value">${S.investors.length}</div><div class="stat-sub up">Active</div></div><div class="stat-card"><div class="stat-label">Viewings</div><div class="stat-value">${confirmed}</div><div class="stat-sub amber">${pending} pending</div></div><div class="stat-card"><div class="stat-label">Emails Sent</div><div class="stat-value">${totalSent}</div><div class="stat-sub up">Via PropMatch</div></div></div><div class="sec-header"><div class="sec-title">Pipeline</div><button class="btn btn-ghost btn-sm" onclick="go('deals')">All →</button></div><div class="pipeline">${['New','Matched','Distributed','Viewing'].map(status=>`<div class="p-col"><div class="p-col-head"><span>${status}</span><span class="p-count">${S.deals.filter(d=>d.status===status).length}</span></div>${S.deals.filter(d=>d.status===status).map(d=>`<div class="deal-chip"><div class="dc-title">${d.title}</div><div class="dc-price">${fmt(d.price)}</div></div>`).join('')||'<div style="font-size:11px;color:var(--text2);text-align:center;padding:8px">—</div>'}</div>`).join('')}</div>${S.viewings.length?`<div class="sec-header"><div class="sec-title">Upcoming Viewings</div><button class="btn btn-ghost btn-sm" onclick="go('viewings')">All →</button></div><div class="card"><div class="card-body" style="padding:10px 14px">${S.viewings.slice(0,3).map(v=>{const{day,mon}=fmtDate(v.viewing_date);return`<div class="viewing-card"><div class="vdate" style="background:var(--accent)"><div class="vday">${day}</div><div class="vmon">${mon}</div></div><div class="vinfo"><div class="vtitle">${v.deal_title}</div><div class="vsub">${v.investor_name}</div></div><span class="tag ${tagCls(v.status)}">${v.status}</span></div>`;}).join('')}</div></div>`:''}</div></div>`;
+}
+
+// ── DEALS ─────────────────────────────────────────────────────────
+function renderDeals(){
+  return`<div class="screen">${topbar('Deal Pipeline',S.deals.length+' deals',`<button class="btn btn-ghost keep" onclick="fetchAll()">↻</button><button class="btn btn-primary" onclick="go('form')">+ Deal</button>`)}<div class="content">${S.deals.length===0?'<div class="card"><div class="empty"><div class="ico">◉</div><p>No deals yet.</p><br/><button class="btn btn-primary" onclick="go(\'form\')">+ Add Deal</button></div></div>':`<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Deal</th><th>Type</th><th>Price</th><th>Yield</th><th>Status</th><th>Sent</th><th></th></tr></thead><tbody>${S.deals.map(d=>`<tr><td><div style="font-weight:600;font-size:13px">${d.title}</div><div style="font-size:11px;color:var(--text2)">${d.location||''}${d.country?', '+d.country:''}</div></td><td><span class="tag tag-blue">${d.asset_type||'—'}</span></td><td style="font-family:'DM Mono',monospace;color:var(--gold);font-size:12px">${fmt(d.price)}</td><td style="color:var(--green);font-weight:600">${d.expected_yield||0}%</td><td><span class="tag ${tagCls(d.status)}">${d.status}</span></td><td style="text-align:center;font-weight:700">${d.investors_matched||0}</td><td><div style="display:flex;gap:5px"><button class="btn btn-ghost btn-sm" onclick="showEditDealModal('${d.id}')">✏ Edit</button><button class="btn btn-ghost btn-sm" onclick="go('matching')">Match</button><button class="btn btn-danger btn-sm" onclick="if(confirm('Delete?'))deleteDeal('${d.id}')">✕</button></div></td></tr>`).join('')}</tbody></table></div></div>`}</div></div>`;
+}
+
+// ── EDIT DEAL MODAL ───────────────────────────────────────────────
+function showEditDealModal(id){
+  const d=S.deals.find(x=>x.id===id); if(!d) return;
+  showModal(`<div class="modal-title">✏ Edit Deal</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg full"><label class="fl">Deal Title</label><input class="fi" id="ed-title" value="${d.title||''}"/></div>
+      <div class="fg"><label class="fl">Asset Type</label><select class="fi" id="ed-type"><option value="">Select</option>${['Residential','Hospitality','Commercial','Mixed-Use','Land','PBSA','BTR'].map(t=>`<option ${d.asset_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Deal Stage</label><select class="fi" id="ed-stage"><option value="">Select</option>${['Off-Market','Exclusive','Under Offer','Open Market'].map(t=>`<option ${d.deal_stage===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Status</label><select class="fi" id="ed-status">${['New','Matched','Distributed','Viewing','Completed'].map(t=>`<option ${d.status===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">City</label><input class="fi" id="ed-loc" value="${d.location||''}"/></div>
+      <div class="fg"><label class="fl">Country</label><select class="fi" id="ed-country"><option value="">Select</option>${['UK','Italy','Germany','Spain','Portugal','Switzerland','Europe','Ireland'].map(t=>`<option ${d.country===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Price (£)</label><input class="fi" id="ed-price" type="number" value="${d.price||''}"/></div>
+      <div class="fg"><label class="fl">Yield (%)</label><input class="fi" id="ed-yield" type="number" value="${d.expected_yield||''}"/></div>
+      <div class="fg"><label class="fl">IRR (%)</label><input class="fi" id="ed-irr" type="number" value="${d.target_irr||''}"/></div>
+      <div class="fg"><label class="fl">Finance</label><select class="fi" id="ed-finance"><option value="">Select</option>${['Cash','Bridging','Refinance','Structured','Flexible'].map(t=>`<option ${d.finance_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg full"><label class="fl">Summary</label><textarea class="fi fi-ta" id="ed-summary">${d.summary||''}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="submitEditDeal('${id}')">Save Changes</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>`);
+  // set country select after render
+  setTimeout(()=>{const s=document.getElementById('ed-country');if(s)s.value=d.country||'';},50);
+}
+
+async function submitEditDeal(id){
+  const deal={
+    title:document.getElementById('ed-title').value.trim(),
+    asset_type:document.getElementById('ed-type').value,
+    deal_stage:document.getElementById('ed-stage').value,
+    status:document.getElementById('ed-status').value,
+    location:document.getElementById('ed-loc').value.trim(),
+    country:document.getElementById('ed-country').value,
+    price:parseFloat(document.getElementById('ed-price').value)||null,
+    expected_yield:parseFloat(document.getElementById('ed-yield').value)||null,
+    target_irr:parseFloat(document.getElementById('ed-irr').value)||null,
+    finance_type:document.getElementById('ed-finance').value,
+    summary:document.getElementById('ed-summary').value.trim(),
+  };
+  closeModal();
+  const ok=await updateDeal(id,deal);
+  if(ok){await fetchAll();render();}
+}
+
+// ── FORM ──────────────────────────────────────────────────────────
+function renderForm(){
+  const d=S.newDeal;const m=S.matchResult;
+  return`<div class="screen">${topbar('Add New Deal','Saved to Supabase')}<div class="content">
+    <div class="card" style="margin-bottom:14px"><div class="card-head">Deal Details</div><div class="card-body"><div class="form-grid">
+      <div class="fg full"><label class="fl">Deal Title *</label><input class="fi" id="f-title" placeholder="e.g. Florence Hotel Portfolio" value="${d.title}"/></div>
+      <div class="fg"><label class="fl">Asset Type</label><select class="fi" id="f-type"><option value="">Select</option>${['Residential','Hospitality','Commercial','Mixed-Use','Land','PBSA','BTR'].map(t=>`<option ${d.asset_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Deal Stage</label><select class="fi" id="f-stage"><option value="">Select</option>${['Off-Market','Exclusive','Under Offer','Open Market'].map(t=>`<option ${d.deal_stage===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">City</label><input class="fi" id="f-loc" placeholder="Florence" value="${d.location}"/></div>
+      <div class="fg"><label class="fl">Country</label><select class="fi" id="f-country"><option value="">Select</option>${['UK','Italy','Germany','Spain','Portugal','Switzerland','Europe','Ireland'].map(t=>`<option ${d.country===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div></div></div>
+    <div class="card" style="margin-bottom:14px"><div class="card-head">Financials</div><div class="card-body"><div class="form-grid">
+      <div class="fg"><label class="fl">Price (£)</label><input class="fi" id="f-price" type="number" placeholder="4200000" value="${d.price}"/></div>
+      <div class="fg"><label class="fl">Yield (%)</label><input class="fi" id="f-yield" type="number" placeholder="6.2" value="${d.expected_yield}"/></div>
+      <div class="fg"><label class="fl">IRR (%)</label><input class="fi" id="f-irr" type="number" placeholder="22" value="${d.target_irr}"/></div>
+      <div class="fg"><label class="fl">Finance</label><select class="fi" id="f-finance"><option value="">Select</option>${['Cash','Bridging','Refinance','Structured','Flexible'].map(t=>`<option ${d.finance_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div></div></div>
+    <div class="card" style="margin-bottom:14px"><div class="card-head">Summary</div><div class="card-body">
+      <div class="fg"><label class="fl">Executive Summary</label><textarea class="fi fi-ta" id="f-summary" placeholder="2–4 sentence overview...">${d.summary}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="runMatchForm()">⟡ Match Investors</button>
+        <button class="btn btn-ghost" onclick="submitDeal()">Save Only</button>
+      </div>
+    </div></div>
+    ${m!==null?`<div class="card"><div class="card-head"><span>Match Results — ${m.length} investors</span><span style="font-size:12px;color:var(--green);font-weight:500">${m.filter(i=>i.email).length} with email</span></div><div class="card-body">
+      <div class="select-all-bar">
+        <span id="sel-count">${m.filter(i=>i.email).length} selected</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="toggleAll(true)">Select All</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAll(false)">Deselect All</button>
+        </div>
+      </div>
+      ${m.length===0?'<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">No matches found. Try different asset type or country.</div>':m.map((inv,i)=>`<div class="match-row ${inv.email?'selected':''}" id="mr-${i}" onclick="toggleRow(${i},'${inv.id}')"><input type="checkbox" class="match-checkbox" id="cb-${i}" ${inv.email?'checked':''} ${!inv.email?'disabled':''} onclick="event.stopPropagation();toggleRow(${i},'${inv.id}')"/><div style="flex:1"><div style="font-weight:600;font-size:13px">${inv.name}</div><div style="font-size:11px;color:var(--text2)">${inv.email||'No email on file'}</div></div><span class="tag ${inv.email?'tag-green':'tag-amber'}">${inv.email?'✓':'No email'}</span></div>`).join('')}
+      <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="sendSelected()">✉ Send to Selected Investors</button>
+    </div></div>`:''}
+  </div></div>`;
+}
+
+// Selected investors tracking
+let _selectedIds=new Set();
+let _currentMatchDeal=null;
+let _currentMatched=[];
+
+function toggleRow(i,invId){
+  const cb=document.getElementById('cb-'+i);
+  const row=document.getElementById('mr-'+i);
+  if(!cb||cb.disabled)return;
+  cb.checked=!cb.checked;
+  if(cb.checked){row.classList.add('selected');_selectedIds.add(invId);}
+  else{row.classList.remove('selected');_selectedIds.delete(invId);}
+  const sel=document.getElementById('sel-count');
+  if(sel)sel.textContent=_selectedIds.size+' selected';
+}
+
+function toggleAll(checked){
+  _currentMatched.forEach((inv,i)=>{
+    if(!inv.email)return;
+    const cb=document.getElementById('cb-'+i);
+    const row=document.getElementById('mr-'+i);
+    if(!cb)return;
+    cb.checked=checked;
+    if(checked){row.classList.add('selected');_selectedIds.add(inv.id);}
+    else{row.classList.remove('selected');_selectedIds.delete(inv.id);}
+  });
+  const sel=document.getElementById('sel-count');
+  if(sel)sel.textContent=_selectedIds.size+' selected';
+}
+
+async function sendSelected(){
+  if(_selectedIds.size===0){toast('No investors selected','err');return;}
+  if(!_currentMatchDeal){toast('No deal selected','err');return;}
+  const selected=_currentMatched.filter(inv=>_selectedIds.has(inv.id)&&inv.email);
+  if(selected.length===0){toast('Selected investors have no email addresses','err');return;}
+  await distributeEmails(_currentMatchDeal,selected);
+}
+
+function readForm(){return{title:document.getElementById('f-title')?.value.trim()||'',asset_type:document.getElementById('f-type')?.value||'',deal_stage:document.getElementById('f-stage')?.value||'',location:document.getElementById('f-loc')?.value.trim()||'',country:document.getElementById('f-country')?.value||'',price:parseFloat(document.getElementById('f-price')?.value)||null,expected_yield:parseFloat(document.getElementById('f-yield')?.value)||null,target_irr:parseFloat(document.getElementById('f-irr')?.value)||null,finance_type:document.getElementById('f-finance')?.value||'',summary:document.getElementById('f-summary')?.value.trim()||''};}
+
+function runMatchForm(){
+  const deal=readForm();
+  S.matchResult=matchInvestors(deal);
+  _currentMatched=S.matchResult;
+  _selectedIds=new Set(S.matchResult.filter(i=>i.email).map(i=>i.id));
+  _currentMatchDeal=null; // will save on send
+  render();
+}
+
 async function submitDeal(){const deal=readForm();if(!deal.title){toast('Title required','err');return;}deal.status='New';deal.investors_matched=0;const r=await saveDeal(deal);if(r){S.newDeal={title:'',asset_type:'',location:'',country:'',price:'',min_investment:'',expected_yield:'',target_irr:'',deal_stage:'',finance_type:'',summary:''};S.matchResult=null;await fetchAll();S.screen='deals';render();}}
-function renderInvestors(){return'<div class="screen"><div class="topbar"><div><div class="page-title">Investor Database</div><div class="page-sub">'+S.investors.length+' investors</div></div><div class="topbar-right"><button class="btn btn-ghost" onclick="fetchAll()">↻</button><button class="btn btn-primary" onclick="showAddInvestorModal()">+ Add Investor</button></div></div><div class="content">'+(S.investors.length===0?'<div class="card"><div class="empty"><div class="ico">◎</div><p>No investors yet.</p></div></div>':'<div class="card"><table class="table"><thead><tr><th>Name</th><th>Type</th><th>Assets</th><th>Geography</th><th>Ticket</th><th>Yield</th><th>Status</th><th></th></tr></thead><tbody>'+S.investors.map(inv=>{const assets=Array.isArray(inv.asset_preference)?inv.asset_preference:(inv.asset_preference||'').split(',').map(s=>s.trim()).filter(Boolean);const geos=Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean);return'<tr><td><div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--accent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">'+initials(inv.name)+'</div><div><div style="font-weight:600;font-size:13px">'+inv.name+'</div>'+(inv.email?'<div style="font-size:10px;color:var(--text2)">'+inv.email+'</div>':'')+'</div></div></td><td><span class="tag tag-blue" style="font-size:10px">'+(inv.investor_type||'—').split('/')[0].trim()+'</span></td><td style="font-size:11px;color:var(--text2)">'+assets.slice(0,2).join(', ')+'</td><td style="font-size:11px;color:var(--text2)">'+geos.slice(0,2).join(', ')+'</td><td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--gold)">'+fmt(inv.min_investment)+(inv.max_investment?' – '+fmt(inv.max_investment):'')+'</td><td style="color:var(--green);font-weight:600">'+(inv.min_yield?inv.min_yield+'%+':'—')+'</td><td><span class="tag '+tagCls(inv.status)+'">'+inv.status+'</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm(\'Remove?\'))deleteInvestor(\''+inv.id+'\')">✕</button></td></tr>';}).join('')+'</tbody></table></div>')+'</div></div>';}
-function showAddInvestorModal(){showModal('<div class="modal-title">Add Investor</div><div class="form-grid" style="margin-bottom:14px"><div class="fg"><label class="fl">Full Name *</label><input class="fi" id="i-name" placeholder="James Whitmore"/></div><div class="fg"><label class="fl">Email</label><input class="fi" id="i-email" placeholder="james@fund.com"/></div><div class="fg"><label class="fl">Investor Type</label><select class="fi" id="i-type"><option value="">Select</option>'+['Family Office','Institutional Fund','UHNWI','HNW Individual','Private Investor','Developer','Fund / Private Equity','Operator / Hospitality'].map(t=>'<option>'+t+'</option>').join('')+'</select></div><div class="fg"><label class="fl">Status</label><select class="fi" id="i-status">'+['Active','Paused','Do Not Contact'].map(t=>'<option>'+t+'</option>').join('')+'</select></div><div class="fg"><label class="fl">Assets (comma sep)</label><input class="fi" id="i-assets" placeholder="Hospitality, Residential"/></div><div class="fg"><label class="fl">Geography (comma sep)</label><input class="fi" id="i-geo" placeholder="UK, Italy"/></div><div class="fg"><label class="fl">Min Investment (£)</label><input class="fi" id="i-min" type="number" placeholder="500000"/></div><div class="fg"><label class="fl">Max Investment (£)</label><input class="fi" id="i-max" type="number" placeholder="5000000"/></div><div class="fg"><label class="fl">Min Yield (%)</label><input class="fi" id="i-yield" type="number" placeholder="5"/></div><div class="fg"><label class="fl">Min IRR (%)</label><input class="fi" id="i-irr" type="number" placeholder="15"/></div><div class="fg full"><label class="fl">Notes</label><textarea class="fi fi-ta" id="i-notes" placeholder="Relationship notes..."></textarea></div></div><div style="display:flex;gap:10px"><button class="btn btn-primary" onclick="submitInvestor()">Save</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>');}
-async function submitInvestor(){const name=document.getElementById('i-name').value.trim();if(!name){toast('Name required','err');return;}const inv={name,email:document.getElementById('i-email').value.trim(),investor_type:document.getElementById('i-type').value,status:document.getElementById('i-status').value,asset_preference:document.getElementById('i-assets').value.split(',').map(s=>s.trim()).filter(Boolean),geography:document.getElementById('i-geo').value.split(',').map(s=>s.trim()).filter(Boolean),min_investment:parseFloat(document.getElementById('i-min').value)||null,max_investment:parseFloat(document.getElementById('i-max').value)||null,min_yield:parseFloat(document.getElementById('i-yield').value)||null,min_irr:parseFloat(document.getElementById('i-irr').value)||null,notes:document.getElementById('i-notes').value.trim()};closeModal();await saveInvestor(inv);await fetchAll();render();}
-function renderMatching(){return'<div class="screen"><div class="topbar"><div><div class="page-title">Match & Distribute</div><div class="page-sub">Select a deal to match against '+S.investors.length+' investors</div></div></div><div class="content"><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div class="sec-header"><div class="sec-title">Select Deal</div></div>'+(S.deals.length===0?'<div class="card"><div class="empty"><div class="ico">◉</div><p>No deals yet.</p></div></div>':S.deals.map(d=>'<div class="deal-chip" style="margin-bottom:10px" onclick="runMatchDeal(\''+d.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="dc-title" style="font-size:14px">'+d.title+'</div><div class="dc-meta">'+(d.asset_type||'')+' · '+(d.location||'')+(d.country?', '+d.country:'')+'</div><div class="dc-price">'+fmt(d.price)+' · '+(d.expected_yield||0)+'% yield</div></div><span class="tag '+tagCls(d.status)+'">'+d.status+'</span></div></div>').join(''))+'</div><div><div class="sec-header"><div class="sec-title">Results</div></div><div class="card"><div class="card-body" id="match-panel"><div class="empty" style="padding:36px 0"><div class="ico">←</div><p style="font-size:12px">Select a deal</p></div></div></div></div></div></div></div>';}
-function runMatchDeal(id){const deal=S.deals.find(d=>d.id===id);if(!deal)return;const matched=matchInvestors(deal);const panel=document.getElementById('match-panel');if(!panel)return;panel.innerHTML='<div><div style="font-size:12px;color:var(--text2);margin-bottom:10px">Matching: <strong style="color:var(--text)">'+deal.title+'</strong></div><div style="font-family:\'DM Serif Display\',serif;font-size:44px;color:var(--gold)">'+matched.length+'</div><div style="color:var(--text2);font-size:13px">investors match</div><div class="progress-bar"><div class="progress-fill" style="width:'+(S.investors.length?Math.min(matched.length/S.investors.length*100,100):0)+'%"></div></div><div style="font-size:11px;color:var(--text2);margin:6px 0 14px">'+S.investors.length+' total</div>'+(matched.length===0?'<div style="color:var(--text2);font-size:12px;text-align:center;padding:10px">No matches.</div>':matched.map(inv=>'<div class="match-row"><div><div style="font-weight:600;font-size:13px">'+inv.name+'</div><div style="font-size:11px;color:var(--text2)">'+(inv.investor_type||'')+'</div></div><span class="tag tag-green">✓</span></div>').join(''))+(matched.length>0?'<button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="distributeNow(\''+id+'\','+matched.length+')">✉ Distribute to '+matched.length+' Investors</button>':'')+'</div>';}
-async function distributeNow(dealId,count){await updateDealStatus(dealId,'Distributed',count);toast('✉ Distributed to '+count+' investors','ok');const btn=document.querySelector('#match-panel .btn-primary');if(btn){btn.textContent='✓ Distributed';btn.disabled=true;}}
-function renderViewings(){const cols=[{lbl:'Slots Requested',statuses:['Slots Requested']},{lbl:'Pending',statuses:['Pending']},{lbl:'Confirmed',statuses:['Confirmed']}];return'<div class="screen"><div class="topbar"><div><div class="page-title">Viewing Scheduler</div><div class="page-sub">'+S.viewings.length+' viewings</div></div><div class="topbar-right"><button class="btn btn-ghost" onclick="fetchAll()">↻</button><button class="btn btn-primary" onclick="showViewingModal()">+ Schedule Viewing</button></div></div><div class="content"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px">'+cols.map(col=>'<div><div class="sec-header" style="margin-bottom:10px"><div class="sec-title" style="font-size:14px">'+col.lbl+'</div><span class="nav-badge">'+S.viewings.filter(v=>col.statuses.includes(v.status)).length+'</span></div>'+S.viewings.filter(v=>col.statuses.includes(v.status)).map(v=>{const{day,mon}=fmtDate(v.viewing_date);return'<div class="viewing-card" style="flex-direction:column;align-items:flex-start;margin-bottom:9px"><div style="display:flex;align-items:center;gap:12px;width:100%"><div class="vdate" style="background:'+(v.status==='Confirmed'?'var(--green)':v.status==='Pending'?'var(--amber)':'var(--border)')+'"><div class="vday">'+day+'</div><div class="vmon">'+mon+'</div></div><div class="vinfo"><div class="vtitle">'+v.deal_title+'</div><div class="vsub">'+v.investor_name+'</div><div class="vsub">'+(v.viewing_time||'')+'</div></div></div><div style="margin-top:9px;display:flex;gap:7px">'+(v.status==='Pending'?'<button class="btn btn-primary btn-sm" onclick="updateViewing(\''+v.id+'\',\'Confirmed\')">Confirm</button>':'')+(v.status==='Slots Requested'?'<button class="btn btn-ghost btn-sm" onclick="updateViewing(\''+v.id+'\',\'Pending\')">Slots Received</button>':'')+'</div></div>';}).join('')+'</div>').join('')+'</div><div class="sec-header"><div class="sec-title">Automation Flow</div></div><div class="card"><div class="card-body"><div class="flow"><div class="f-step done">Deal Distributed</div><div class="f-arrow">→</div><div class="f-step done">Investor Replies YES</div><div class="f-arrow">→</div><div class="f-step done">Team Notified</div><div class="f-arrow">→</div><div class="f-step active">3 Slots Requested</div><div class="f-arrow">→</div><div class="f-step">Confirmed</div></div></div></div></div></div>';}
-function showViewingModal(){showModal('<div class="modal-title">Schedule Viewing</div><div class="form-grid" style="margin-bottom:14px"><div class="fg"><label class="fl">Deal</label><select class="fi" id="v-deal"><option value="">Select deal</option>'+S.deals.map(d=>'<option>'+d.title+'</option>').join('')+'</select></div><div class="fg"><label class="fl">Investor</label><select class="fi" id="v-inv"><option value="">Select investor</option>'+S.investors.map(i=>'<option>'+i.name+'</option>').join('')+'</select></div><div class="fg"><label class="fl">Date</label><input class="fi" id="v-date" type="date"/></div><div class="fg"><label class="fl">Time</label><input class="fi" id="v-time" type="time" value="10:00"/></div><div class="fg full"><label class="fl">Notes</label><input class="fi" id="v-notes" placeholder="Any notes"/></div></div><div style="display:flex;gap:10px"><button class="btn btn-primary" onclick="submitViewing()">Schedule</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>');}
-async function submitViewing(){const deal_title=document.getElementById('v-deal').value;const investor_name=document.getElementById('v-inv').value;const viewing_date=document.getElementById('v-date').value;if(!deal_title||!investor_name||!viewing_date){toast('Fill all fields','err');return;}closeModal();await saveViewing({deal_title,investor_name,viewing_date,viewing_time:document.getElementById('v-time').value,notes:document.getElementById('v-notes').value,status:'Pending'});await fetchAll();render();}
-function nav(screen){S.screen=screen;S.matchResult=null;render();}
-function render(){const screens={dashboard:renderDashboard,deals:renderDeals,form:renderForm,investors:renderInvestors,matching:renderMatching,viewings:renderViewings};const content=S.loading?'<div class="main"><div class="loading-screen"><div class="spinner"></div><div>Loading from Supabase...</div></div></div>':'<div class="main">'+(screens[S.screen]||renderDashboard)()+'</div>';document.getElementById('app').innerHTML=renderSidebar()+content;}
+
+// ── INVESTORS ─────────────────────────────────────────────────────
+function renderInvestors(){
+  return`<div class="screen">${topbar('Investor DB',S.investors.length+' investors',`<button class="btn btn-ghost keep" onclick="fetchAll()">↻</button><button class="btn btn-ghost keep btn-sm" onclick="showImportModal()" style="font-size:11px">⬆ Import</button><button class="btn btn-primary" onclick="showInvestorModal(null)">+ Add</button>`)}<div class="content">${S.investors.length===0?`<div class="card"><div class="empty"><div class="ico">◎</div><p>No investors yet.</p><br/><button class="btn btn-primary" onclick="showImportModal()">Import 32 Investors</button></div></div>`:`<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Type</th><th>Ticket</th><th>Geography</th><th>Status</th><th></th></tr></thead><tbody>${S.investors.map(inv=>{const geos=Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean);return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--accent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${initials(inv.name)}</div><div><div style="font-weight:600;font-size:13px">${inv.name}</div>${inv.email?`<div style="font-size:10px;color:var(--text2)">${inv.email}</div>`:''}</div></div></td><td style="font-size:11px">${(inv.investor_type||'—').split('/')[0].trim()}</td><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold)">${fmt(inv.min_investment)}${inv.max_investment?' – '+fmt(inv.max_investment):''}</td><td style="font-size:11px;color:var(--text2)">${geos.slice(0,2).join(', ')||'—'}</td><td><span class="tag ${tagCls(inv.status)}">${inv.status}</span></td><td><div style="display:flex;gap:5px"><button class="btn btn-ghost btn-sm" onclick="showInvestorModal('${inv.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="if(confirm('Remove?'))deleteInvestor('${inv.id}')">✕</button></div></td></tr>`;}).join('')}</tbody></table></div></div>`}</div></div>`;
+}
+
+// ── INVESTOR MODAL (Add + Edit) ───────────────────────────────────
+function showInvestorModal(id){
+  const inv=id?S.investors.find(x=>x.id===id):null;
+  const title=inv?'✏ Edit Investor':'Add Investor';
+  const assets=inv?(Array.isArray(inv.asset_preference)?inv.asset_preference:(inv.asset_preference||'').split(',').map(s=>s.trim()).filter(Boolean)).join(', '):'';
+  const geos=inv?(Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean)).join(', '):'';
+  showModal(`<div class="modal-title">${title}</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="i-name" value="${inv?.name||''}" placeholder="James Whitmore"/></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="i-email" value="${inv?.email||''}" placeholder="james@fund.com"/></div>
+      <div class="fg"><label class="fl">Investor Type</label><select class="fi" id="i-type"><option value="">Select</option>${['Family Office','Institutional Fund','UHNWI','HNW Individual','Private Investor','Developer','Fund / Private Equity','Operator / Hospitality'].map(t=>`<option ${inv?.investor_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Status</label><select class="fi" id="i-status">${['Active','Paused','Do Not Contact'].map(t=>`<option ${(inv?.status||'Active')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Assets (comma sep)</label><input class="fi" id="i-assets" value="${assets}" placeholder="Hospitality, Residential"/></div>
+      <div class="fg"><label class="fl">Geography (comma sep)</label><input class="fi" id="i-geo" value="${geos}" placeholder="UK, Italy"/></div>
+      <div class="fg"><label class="fl">Min (£)</label><input class="fi" id="i-min" type="number" value="${inv?.min_investment||''}" placeholder="500000"/></div>
+      <div class="fg"><label class="fl">Max (£)</label><input class="fi" id="i-max" type="number" value="${inv?.max_investment||''}" placeholder="5000000"/></div>
+      <div class="fg"><label class="fl">Min Yield %</label><input class="fi" id="i-yield" type="number" value="${inv?.min_yield||''}" placeholder="5"/></div>
+      <div class="fg"><label class="fl">Min IRR %</label><input class="fi" id="i-irr" type="number" value="${inv?.min_irr||''}" placeholder="15"/></div>
+      <div class="fg full"><label class="fl">Notes</label><textarea class="fi fi-ta" id="i-notes" placeholder="Relationship notes...">${inv?.notes||''}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="submitInvestor('${id||''}')">${inv?'Save Changes':'Add Investor'}</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+
+async function submitInvestor(id){
+  const name=document.getElementById('i-name').value.trim();
+  if(!name){toast('Name required','err');return;}
+  const inv={name,email:document.getElementById('i-email').value.trim()||null,investor_type:document.getElementById('i-type').value,status:document.getElementById('i-status').value,asset_preference:document.getElementById('i-assets').value.split(',').map(s=>s.trim()).filter(Boolean),geography:document.getElementById('i-geo').value.split(',').map(s=>s.trim()).filter(Boolean),min_investment:parseFloat(document.getElementById('i-min').value)||null,max_investment:parseFloat(document.getElementById('i-max').value)||null,min_yield:parseFloat(document.getElementById('i-yield').value)||null,min_irr:parseFloat(document.getElementById('i-irr').value)||null,notes:document.getElementById('i-notes').value.trim()};
+  closeModal();
+  if(id){await updateInvestor(id,inv);}else{await saveInvestor(inv);}
+  await fetchAll();render();
+}
+
+// ── BULK IMPORT ───────────────────────────────────────────────────
+const INVESTORS_DATA=[{name:"Kaan Ozturk (Privilege Developments)",email:"kaan@dervisoglu.com",investor_type:"Developer",asset_preference:[],geography:[],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"European Investor"},{name:"Lee (Tay Developments)",email:"lee@taydevelopments.co.uk",investor_type:"Developer",asset_preference:["Residential","Mixed-Use"],geography:["London","Home Counties"],min_investment:500000,max_investment:3000000,min_yield:null,min_irr:null,status:"Active",notes:"Planning-led and value-add residential or mixed-use."},{name:"Michael Posner (M Real Estate)",email:"michael@mrealestate.co.uk",investor_type:"Developer",asset_preference:["Residential","Mixed-Use"],geography:["North London"],min_investment:null,max_investment:5000000,min_yield:null,min_irr:null,status:"Active",notes:"Unmodernised freeholds and freehold blocks. HMO focus."},{name:"Alexander Hogge (Sennia Group)",email:"alex@senniagroup.co.uk",investor_type:"Developer / Investor-Operator",asset_preference:["Residential","Mixed-Use"],geography:["Slough","Home Counties","Greater London"],min_investment:1000000,max_investment:10000000,min_yield:null,min_irr:null,status:"Active",notes:"Planning-led residential and mixed-use. 15-40+ unit schemes."},{name:"Shmuel Hoffman (Hoffland Estate)",email:"info@hofflandestate.co.uk",investor_type:"Private Investor",asset_preference:["Residential","Mixed-Use"],geography:["London"],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"BMV 25% - 8% yield - Shops - Mixed Use - Freeholds"},{name:"Felipe (Rio Capital)",email:"Felipe@riocapital.pt",investor_type:"Private Capital",asset_preference:["Commercial","Residential","Mixed-Use"],geography:["Central London","Zone 2"],min_investment:2000000,max_investment:20000000,min_yield:null,min_irr:17,status:"Active",notes:"Fund/Developers from Portugal. Min IRR 17%."},{name:"Alex Horton (Tolaxis)",email:"alex.horton@tolaxis.com",investor_type:"Developer / Investor-Operator",asset_preference:["Retail","Commercial","Mixed-Use","Residential"],geography:["London","Birmingham","Manchester","Leeds","Bristol"],min_investment:10000000,max_investment:50000000,min_yield:null,min_irr:null,status:"Active",notes:"UK property investment and development. Residential-led mixed-use across major UK cities."},{name:"Ciaran (Citigrove Developers)",email:"ciaranjordan@citygrove.com",investor_type:"Developer",asset_preference:["Residential","Commercial","Hospitality","Mixed-Use"],geography:["UK","Europe","Germany"],min_investment:10000000,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"Large-scale residential, commercial, hospitality and mixed-use."},{name:"Jean-Christophe Avellaneda (Sofidy)",email:"javellaneda@sofidy.com",investor_type:"Fund / Asset Management Firm",asset_preference:["Commercial","Residential","Mixed-Use"],geography:["London","Birmingham","Italy"],min_investment:15000000,max_investment:50000000,min_yield:7.5,min_irr:null,status:"Active",notes:"French fund. Min yield 7.5%."},{name:"Aleix (AX Partners Fund)",email:"aleix@axpartners.fund",investor_type:"Fund / Private Equity Real Estate",asset_preference:["Hospitality","Residential","Mixed-Use","Commercial"],geography:["Spain","Europe","Mediterranean"],min_investment:5000000,max_investment:50000000,min_yield:null,min_irr:null,status:"Active",notes:"European real estate private equity. Value-add and core plus."},{name:"Baptiste (Airelles)",email:"b.prats@airelles.com",investor_type:"Operator / Hospitality Brand",asset_preference:["Hospitality","Luxury Hotels"],geography:["London","Paris","Rome","Florence","Lake Como"],min_investment:30000000,max_investment:200000000,min_yield:null,min_irr:null,status:"Active",notes:"Trophy Buildings. Luxury hospitality brand operator."},{name:"Enrico Fantini (OM Developments)",email:"enrico@gerentgroup.io",investor_type:"Developer / Operator / Hospitality Brand",asset_preference:["Hospitality","Residential","Mixed-Use"],geography:["London","Europe"],min_investment:20000000,max_investment:200000000,min_yield:null,min_irr:null,status:"Active",notes:"Large-scale developer/operator. London and European main cities."},{name:"Nicholas Cowell (Cowell Group)",email:"n.cowell@cowellgroup.net",investor_type:"Developer / Property Developer",asset_preference:["Residential","Mixed-Use","BTR","PBSA","Commercial"],geography:["London","South East","Birmingham","Manchester","Leeds"],min_investment:5000000,max_investment:25000000,min_yield:null,min_irr:null,status:"Active",notes:"Active UK developer. BTR/PRS and PBSA."},{name:"Christophe Pokk (Novel Capital)",email:"c.pokk@novelcapital.co.uk",investor_type:"Fund / Private Equity",asset_preference:["Residential","Commercial","Mixed-Use","Development"],geography:["UK","Europe"],min_investment:5000000,max_investment:200000000,min_yield:null,min_irr:null,status:"Active",notes:"Multi-strategy private equity. Opportunistic credit and development finance."},{name:"Zara Adams (Fair Value Capital)",email:"zara@fairvaluecapital.co.uk",investor_type:"Fund / Real Estate Investment",asset_preference:["Hospitality","PBSA","Mixed-Use","Commercial"],geography:["UK","Europe"],min_investment:5000000,max_investment:50000000,min_yield:6.5,min_irr:10,status:"Active",notes:"Value-add strategies. Min yield 6.5%, min IRR 10%."},{name:"Hanif Bhimji (Kaz Hotels)",email:"Hanif@kazhotels.co.uk",investor_type:"Operator / Hospitality Owner",asset_preference:["Hospitality"],geography:["London"],min_investment:1000000,max_investment:5000000,min_yield:null,min_irr:null,status:"Active",notes:"Family-owned UK hospitality operator. London hotels."},{name:"Karim Janmohamed (The Karali Group)",email:"Karim@karalionline.co.uk",investor_type:"Fund / Investment Group",asset_preference:["Residential","Mixed-Use","Commercial"],geography:["UK","Europe"],min_investment:5000000,max_investment:50000000,min_yield:null,min_irr:null,status:"Active",notes:"Investment group targeting real estate value-add. UK and Europe."},{name:"Dion Michael (Grosvenor Hill)",email:"Dion@grosvenor-hill.com",investor_type:"Fund / Asset Manager",asset_preference:["Residential","Mixed-Use","Commercial","Logistics"],geography:["UK","Europe"],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"UK-based investment and asset manager."},{name:"Steven Hag (Capax Capital)",email:"Steven.haag@capaxcapital.co.uk",investor_type:"Fund",asset_preference:["Residential","Commercial","Mixed-Use"],geography:["London"],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"London-based fund."},{name:"Sebastian Oliver (Mayfair Private Office)",email:"seb@mayfairprivateoffice.co.uk",investor_type:"Single Family Office",asset_preference:["Residential","Mixed-Use","Commercial"],geography:["UK","London","Europe"],min_investment:3000000,max_investment:25000000,min_yield:7,min_irr:10,status:"Active",notes:"Single family investment office. Mayfair. Min yield 7%, min IRR 10%."},{name:"Joseph Wolley",email:null,investor_type:"Private Investor",asset_preference:["Residential","Mixed-Use"],geography:["London"],min_investment:10000000,max_investment:10000000,min_yield:null,min_irr:null,status:"Active",notes:"High-ticket London residential investor."},{name:"Matthew Cookson (City Aparts)",email:"Mcookson@cityaparts.com",investor_type:"Developer / Operator",asset_preference:["Residential","PBSA","BTR","Mixed-Use"],geography:["UK","London"],min_investment:3000000,max_investment:15000000,min_yield:null,min_irr:null,status:"Active",notes:"Residential and operational rental platforms. Student accommodation and BTR/PRS."},{name:"Joao Pagani Toscano (Pagani Capital)",email:"Joao.toscano@livinggroup.com.pt",investor_type:"Investment / Asset Manager",asset_preference:["Residential","Mixed-Use","Commercial"],geography:["UK","Europe"],min_investment:5000000,max_investment:50000000,min_yield:null,min_irr:12,status:"Active",notes:"Real estate investment and asset management. Min IRR 12%."},{name:"Thom Lloyd (Zenzic Capital)",email:"tlj@zenziccapital.com",investor_type:"Real Estate Credit / Investment Manager",asset_preference:["Residential","Commercial","Hospitality","Logistics","PBSA"],geography:["UK","Western Europe"],min_investment:10000000,max_investment:70000000,min_yield:null,min_irr:10,status:"Active",notes:"London-based real estate credit specialist."},{name:"Dogan Karalar (Kreado)",email:"Dk@kreado.co.uk",investor_type:"Developer",asset_preference:[],geography:[],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"Developer — criteria call needed."},{name:"First Net Zero",email:"dylan@firstnetzero.com",investor_type:"Fund / Private Equity Investment Manager",asset_preference:["Sustainable Infrastructure","Net Zero Real Assets"],geography:["Europe"],min_investment:5000000,max_investment:100000000,min_yield:null,min_irr:null,status:"Active",notes:"EU net-zero aligned investment management."},{name:"Alex Enache (LGH Hotels Management)",email:"Alex.enache@lghhm.com",investor_type:"Operator / Hospitality Management",asset_preference:["Hospitality"],geography:["UK"],min_investment:1000000,max_investment:10000000,min_yield:null,min_irr:null,status:"Active",notes:"Hospitality operator. Mid-scale hotel assets."},{name:"Alex Enache (Tenergy Group)",email:"Alex.enache2@lghhm.com",investor_type:"Property Investment / Developer",asset_preference:["Commercial","Mixed-Use","Retail","Residential"],geography:["UK","London","South East"],min_investment:2000000,max_investment:20000000,min_yield:6,min_irr:12,status:"Active",notes:"UK property investment and development. London and South East."},{name:"Anthony Jackson (Martin Property Group)",email:"ajackson@martin-group.co.uk",investor_type:"Developer / Property Investment",asset_preference:["Commercial","Retail","Hospitality","Residential","Mixed-Use"],geography:["UK","Ireland"],min_investment:3000000,max_investment:25000000,min_yield:null,min_irr:12,status:"Active",notes:"UK developer and investor. Property regeneration."},{name:"Oren Saada (BOHOPO Group)",email:"oren@bohopo.com",investor_type:"Real Estate Investment / Hospitality Operator",asset_preference:["Hospitality","Mixed-Use"],geography:["Europe","Athens","Brussels","Paris","Milan"],min_investment:3000000,max_investment:20000000,min_yield:null,min_irr:null,status:"Active",notes:"Boutique hotels in European city centres."},{name:"Fouad Chehab & Samuel Benais (Maya Private Capital)",email:null,investor_type:"Fund",asset_preference:["Residential","Commercial","Mixed-Use"],geography:["Europe"],min_investment:20000000,max_investment:200000000,min_yield:null,min_irr:null,status:"Active",notes:"Geneva-based fund. £20-200m deals."},{name:"Simba (Stay Urban Rest)",email:"simba@stayurbanrest.com",investor_type:"Private Investor",asset_preference:["Hospitality"],geography:["UK"],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"Lease 4-5 Star Hotels."}];
+
+function showImportModal(){
+  showModal(`<div class="modal-title">⬆ Import 32 Investors</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Imports all 32 investors from your Capital Partners Registry into Supabase.</p>
+    <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span id="imp-lbl">Ready to import</span><span id="imp-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="imp-prog" style="width:0%"></div></div></div>
+    <div class="send-log" id="imp-log"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" id="imp-btn" onclick="runBulkImport()">▶ Import All 32</button>
+      <button class="btn btn-ghost" id="imp-close" onclick="closeModal();fetchAll();render()" disabled>Done</button>
+    </div>`);
+}
+
+async function runBulkImport(){
+  document.getElementById('imp-btn').disabled=true;
+  function log(msg,type='info'){const el=document.getElementById('imp-log');if(!el)return;const d=document.createElement('div');d.className='send-log-line '+type;d.textContent='['+new Date().toLocaleTimeString()+'] '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+  let ok=0,fail=0;
+  log('Importing '+INVESTORS_DATA.length+' investors...','info');
+  for(let i=0;i<INVESTORS_DATA.length;i++){
+    try{const{error}=await sb.from('investors').insert([INVESTORS_DATA[i]]);if(error)throw error;ok++;log('✓ '+INVESTORS_DATA[i].name,'ok');}
+    catch(e){fail++;log('✗ '+INVESTORS_DATA[i].name+': '+e.message,'err');}
+    const pct=Math.round(((i+1)/INVESTORS_DATA.length)*100);
+    const p=document.getElementById('imp-prog');const pp=document.getElementById('imp-pct');const pl=document.getElementById('imp-lbl');
+    if(p)p.style.width=pct+'%';if(pp)pp.textContent=pct+'%';if(pl)pl.textContent=(i+1)+' of '+INVESTORS_DATA.length;
+    await new Promise(r=>setTimeout(r,120));
+  }
+  log('Done. '+ok+' imported, '+fail+' skipped.',ok>0?'ok':'err');
+  const cb=document.getElementById('imp-close');if(cb)cb.disabled=false;
+  toast(ok+' investors imported ✓','ok');
+}
+
+// ── MATCHING ──────────────────────────────────────────────────────
+function renderMatching(){
+  return`<div class="screen">${topbar('Match & Distribute','Emails from '+FROM_EMAIL)}<div class="content">
+    <div class="sec-header"><div class="sec-title">Select Deal</div></div>
+    ${S.deals.length===0?'<div class="card"><div class="empty"><div class="ico">◉</div><p>No deals yet.</p></div></div>':S.deals.map(d=>`<div class="deal-chip" style="margin-bottom:10px" onclick="runMatchDeal('${d.id}')"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="dc-title" style="font-size:14px">${d.title}</div><div class="dc-meta">${d.asset_type||''} · ${d.location||''}${d.country?', '+d.country:''}</div><div class="dc-price">${fmt(d.price)} · ${d.expected_yield||0}% yield</div></div><span class="tag ${tagCls(d.status)}">${d.status}</span></div></div>`).join('')}
+    <div id="match-results"></div>
+  </div></div>`;
+}
+
+function runMatchDeal(id){
+  const deal=S.deals.find(d=>d.id===id);if(!deal)return;
+  const matched=matchInvestors(deal);
+  _currentMatchDeal=id;
+  _currentMatched=matched;
+  _selectedIds=new Set(matched.filter(i=>i.email).map(i=>i.id));
+  const panel=document.getElementById('match-results');if(!panel)return;
+  panel.innerHTML=`<div class="card" style="margin-top:16px"><div class="card-head"><span>Results — ${matched.length} investors match</span><span style="font-size:12px;color:var(--green);font-weight:500">${matched.filter(i=>i.email).length} with email</span></div><div class="card-body">
+    ${matched.length===0?'<div class="empty" style="padding:20px"><div class="ico">🔍</div><p>No matches. Try a different deal or add more investors.</p></div>':`
+    <div class="select-all-bar"><span id="sel-count-m">${matched.filter(i=>i.email).length} selected</span><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="toggleAllMatch(true)">Select All</button><button class="btn btn-ghost btn-sm" onclick="toggleAllMatch(false)">Deselect All</button></div></div>
+    ${matched.map((inv,i)=>`<div class="match-row ${inv.email?'selected':''}" id="mmr-${i}" onclick="toggleMatchRow(${i},'${inv.id}')"><input type="checkbox" class="match-checkbox" id="mcb-${i}" ${inv.email?'checked':''} ${!inv.email?'disabled':''} onclick="event.stopPropagation();toggleMatchRow(${i},'${inv.id}')"/><div style="flex:1"><div style="font-weight:600;font-size:13px">${inv.name}</div><div style="font-size:11px;color:var(--text2)">${inv.investor_type||''} · ${inv.email||'No email'}</div></div><span class="tag ${inv.email?'tag-green':'tag-amber'}">${inv.email?'✓ Email':'No email'}</span></div>`).join('')}
+    <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="sendMatchSelected()">✉ Send to Selected Investors</button>`}
+  </div></div>`;
+}
+
+function toggleMatchRow(i,invId){
+  const cb=document.getElementById('mcb-'+i);const row=document.getElementById('mmr-'+i);
+  if(!cb||cb.disabled)return;
+  cb.checked=!cb.checked;
+  if(cb.checked){row.classList.add('selected');_selectedIds.add(invId);}
+  else{row.classList.remove('selected');_selectedIds.delete(invId);}
+  const sel=document.getElementById('sel-count-m');
+  if(sel)sel.textContent=_selectedIds.size+' selected';
+}
+
+function toggleAllMatch(checked){
+  _currentMatched.forEach((inv,i)=>{
+    if(!inv.email)return;
+    const cb=document.getElementById('mcb-'+i);const row=document.getElementById('mmr-'+i);
+    if(!cb)return;
+    cb.checked=checked;
+    if(checked){row.classList.add('selected');_selectedIds.add(inv.id);}
+    else{row.classList.remove('selected');_selectedIds.delete(inv.id);}
+  });
+  const sel=document.getElementById('sel-count-m');
+  if(sel)sel.textContent=_selectedIds.size+' selected';
+}
+
+async function sendMatchSelected(){
+  if(_selectedIds.size===0){toast('No investors selected','err');return;}
+  const selected=_currentMatched.filter(inv=>_selectedIds.has(inv.id)&&inv.email);
+  if(selected.length===0){toast('No emails available for selected investors','err');return;}
+  await distributeEmails(_currentMatchDeal,selected);
+}
+
+// ── VIEWINGS ──────────────────────────────────────────────────────
+function renderViewings(){
+  return`<div class="screen">${topbar('Viewing Scheduler',S.viewings.length+' viewings',`<button class="btn btn-primary" onclick="showViewingModal()">+ Schedule</button>`)}<div class="content">
+    ${['Slots Requested','Pending','Confirmed'].map(status=>`<div class="sec-header" style="margin-bottom:8px"><div class="sec-title" style="font-size:14px">${status}</div><span class="nav-badge">${S.viewings.filter(v=>v.status===status).length}</span></div>${S.viewings.filter(v=>v.status===status).map(v=>{const{day,mon}=fmtDate(v.viewing_date);return`<div class="viewing-card"><div class="vdate" style="background:${status==='Confirmed'?'var(--green)':status==='Pending'?'var(--amber)':'var(--border)'}"><div class="vday">${day}</div><div class="vmon">${mon}</div></div><div class="vinfo"><div class="vtitle">${v.deal_title}</div><div class="vsub">${v.investor_name} · ${v.viewing_time||''}</div></div>${status==='Pending'?`<button class="btn btn-success btn-sm" onclick="updateViewing('${v.id}','Confirmed')">Confirm</button>`:`<span class="tag ${tagCls(v.status)}">${v.status}</span>`}</div>`;}).join('')||`<div style="font-size:12px;color:var(--text2);padding:6px 0 16px">None</div>`}`).join('')}
+    <div class="sec-header" style="margin-top:8px"><div class="sec-title" style="font-size:14px">Automation Flow</div></div>
+    <div class="card"><div class="card-body"><div class="flow"><div class="f-step done">Deal Sent</div><div class="f-arrow">→</div><div class="f-step done">YES Reply</div><div class="f-arrow">→</div><div class="f-step active">Slots Requested</div><div class="f-arrow">→</div><div class="f-step">Confirmed</div></div></div></div>
+  </div></div>`;
+}
+
+function showViewingModal(){showModal(`<div class="modal-title">Schedule Viewing</div><div class="form-grid" style="margin-bottom:12px"><div class="fg"><label class="fl">Deal</label><select class="fi" id="v-deal"><option value="">Select deal</option>${S.deals.map(d=>`<option>${d.title}</option>`).join('')}</select></div><div class="fg"><label class="fl">Investor</label><select class="fi" id="v-inv"><option value="">Select investor</option>${S.investors.map(i=>`<option>${i.name}</option>`).join('')}</select></div><div class="fg"><label class="fl">Date</label><input class="fi" id="v-date" type="date"/></div><div class="fg"><label class="fl">Time</label><input class="fi" id="v-time" type="time" value="10:00"/></div><div class="fg full"><label class="fl">Notes</label><input class="fi" id="v-notes" placeholder="Any notes"/></div></div><div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="submitViewing()">Schedule</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);}
+async function submitViewing(){const dt=document.getElementById('v-deal').value;const inv=document.getElementById('v-inv').value;const vd=document.getElementById('v-date').value;if(!dt||!inv||!vd){toast('Fill all fields','err');return;}closeModal();await saveViewing({deal_title:dt,investor_name:inv,viewing_date:vd,viewing_time:document.getElementById('v-time').value,notes:document.getElementById('v-notes').value,status:'Pending'});await fetchAll();render();}
+
+// ── MAIN ──────────────────────────────────────────────────────────
+function go(screen){S.screen=screen;S.matchResult=null;render();window.scrollTo(0,0);}
+function render(){
+  const screens={dashboard:renderDashboard,deals:renderDeals,form:renderForm,investors:renderInvestors,matching:renderMatching,viewings:renderViewings};
+  const content=S.loading?'<div class="main"><div class="loading-screen"><div class="spinner"></div><div>Loading...</div></div></div>':'<div class="main">'+(screens[S.screen]||renderDashboard)()+renderBottomNav()+'</div>';
+  document.getElementById('app').innerHTML=renderSidebar()+content;
+  document.getElementById('overlay').onclick=closeSidebar;
+}
 render();fetchAll();
 </script>
 </body>
