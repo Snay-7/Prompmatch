@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PropMatch Network</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0B1728;--navy2:#152238;--blue:#1A4F8A;--accent:#2D7DD2;
+  --gold:#C9A84C;--gold2:#E8C96E;--green:#1A7A4A;--green-light:#E8F5EE;
+  --red:#C0392B;--red-light:#FDECEA;--amber:#D35400;--amber-light:#FEF3E8;
+  --purple:#6C3D8A;--purple-light:#F0E6F6;
+  --border:#2A3A52;--card:#13203A;--text:#E8EDF5;--text2:#9AAFC8;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:420px}
+.auth-logo{font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);margin-bottom:4px}
+.auth-sub{font-size:12px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px}
+.auth-tabs{display:flex;gap:4px;background:var(--navy);border-radius:10px;padding:3px;margin-bottom:24px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all 0.15s}
+.auth-tab.active{background:var(--card);color:var(--text)}
+.auth-role-select{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.role-card{background:var(--navy);border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all 0.15s}
+.role-card:hover{border-color:var(--accent)}
+.role-card.selected{border-color:var(--gold);background:#C9A84C12}
+.role-icon{font-size:24px;margin-bottom:6px}
+.role-label{font-size:13px;font-weight:600;color:var(--text)}
+.role-desc{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* LAYOUT */
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;overflow-y:auto;transition:transform 0.25s ease}
+.main{margin-left:240px;flex:1;min-height:100vh}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:#000000aa;z-index:150}
+.logo{padding:20px 20px 14px;border-bottom:1px solid var(--border)}
+.logo-text{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold)}
+.logo-sub{font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.db-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.db-dot.live{background:var(--green);animation:pulse 2s infinite}
+.db-status{font-size:10px;color:var(--amber);margin-top:6px;display:flex;align-items:center}
+.db-status.live{color:var(--green)}
+.nav{padding:12px 10px;flex:1}
+.nav-section{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);padding:10px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:1px}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:linear-gradient(135deg,#1A4F8A22,#2D7DD222);color:var(--gold);border:1px solid #2D7DD230}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:10px}
+.avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.avatar.agent{background:linear-gradient(135deg,var(--blue),var(--accent))}
+.avatar.investor{background:linear-gradient(135deg,var(--green),#2ECC71)}
+.avatar.admin{background:linear-gradient(135deg,var(--purple),#9B59B6)}
+.user-name{font-size:12px;font-weight:600}
+.user-role-badge{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:20px;margin-top:1px;display:inline-block}
+.role-agent{background:#1A4F8A22;color:#5B9FE0}
+.role-investor{background:#1A7A4A22;color:#52BE80}
+.role-admin{background:#6C3D8A22;color:#AF7AC5}
+
+/* TOPBAR */
+.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.menu-btn{display:none;background:transparent;border:none;color:var(--text2);font-size:20px;cursor:pointer}
+.page-title{font-family:'DM Serif Display',serif;font-size:18px}
+.page-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--blue));color:#fff}
+.btn-primary:hover{opacity:0.9}.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{opacity:0.9}
+.btn-danger{background:transparent;color:var(--red);border:1px solid #C0392B44}
+.btn-danger:hover{background:var(--red-light)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#B8900A);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+
+/* CONTENT */
+.content{padding:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
+.stat-value{font-family:'DM Serif Display',serif;font-size:28px;line-height:1}
+.stat-sub{font-size:11px;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block}
+.stat-sub.up{background:var(--green-light);color:var(--green)}
+.stat-sub.amber{background:var(--amber-light);color:var(--amber)}
+.stat-sub.purple{background:var(--purple-light);color:var(--purple)}
+
+/* CARDS */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-family:'DM Serif Display',serif;font-size:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-head{padding:13px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:16px}
+.table-wrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;min-width:500px}
+.table th{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.table td{padding:10px 12px;border-bottom:1px solid #1E2F48;font-size:13px;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#ffffff04}
+
+/* TAGS */
+.tag{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.tag-blue{background:#1A4F8A22;color:#5B9FE0;border:1px solid #1A4F8A44}
+.tag-green{background:var(--green-light);color:var(--green)}
+.tag-amber{background:var(--amber-light);color:var(--amber)}
+.tag-gold{background:#C9A84C18;color:var(--gold2);border:1px solid #C9A84C33}
+.tag-muted{background:#ffffff0f;color:var(--text2)}
+.tag-red{background:var(--red-light);color:var(--red)}
+.tag-purple{background:var(--purple-light);color:var(--purple)}
+
+/* PIPELINE */
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.p-col{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
+.p-col-head{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.p-count{background:var(--navy2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
+.deal-chip{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px;cursor:pointer;transition:all 0.15s}
+.deal-chip:hover{border-color:var(--accent)}
+.dc-title{font-size:12px;font-weight:600;margin-bottom:3px}
+.dc-meta{font-size:11px;color:var(--text2)}
+.dc-price{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);margin-top:4px}
+
+/* MARKETPLACE */
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.market-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.2s;cursor:pointer}
+.market-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.market-card-header{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.market-badge{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.market-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);margin-bottom:4px}
+.market-location{font-size:12px;color:var(--text2)}
+.market-card-body{padding:14px 16px}
+.market-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.metric{text-align:center;background:var(--navy2);border-radius:8px;padding:10px 6px}
+.metric-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:3px}
+.metric-value{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text)}
+.metric-value.green{color:var(--green)}
+.metric-value.gold{color:var(--gold)}
+.market-card-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.match-pill{background:var(--green-light);color:var(--green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.no-match-pill{background:#ffffff0f;color:var(--text2);font-size:11px;padding:3px 10px;border-radius:20px}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}
+.fl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:500}
+.fi{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;width:100%}
+.fi:focus{border-color:var(--accent)}.fi option{background:var(--navy2)}.fi-ta{resize:vertical;min-height:75px}
+
+/* MATCH ROW */
+.match-row{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;cursor:pointer;transition:all 0.15s}
+.match-row:hover{border-color:var(--accent)}
+.match-row.selected{border-color:var(--green);background:#1A7A4A15}
+.match-checkbox{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+
+/* VIEWINGS */
+.viewing-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:9px;display:flex;align-items:center;gap:12px}
+.vdate{border-radius:8px;padding:7px 10px;text-align:center;min-width:46px}
+.vday{font-family:'DM Serif Display',serif;font-size:20px;color:#fff;line-height:1}
+.vmon{font-size:9px;color:#ffffffaa;text-transform:uppercase;letter-spacing:1px}
+.vinfo{flex:1;min-width:0}
+.vtitle{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vsub{font-size:11px;color:var(--text2)}
+
+/* NOTIFICATION */
+.notif-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px}
+.notif-dot.read{background:var(--border)}
+.notif-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.notif-meta{font-size:11px;color:var(--text2)}
+
+/* MISC */
+.progress-bar{height:4px;background:#ffffff10;border-radius:2px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.toggle-wrap{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--navy2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px}
+.toggle{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle.on::after{transform:translateX(16px)}
+.send-log{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px;height:150px;overflow-y:auto;font-family:'DM Mono',monospace;font-size:11px;margin-top:10px}
+.send-log-line{margin-bottom:3px;line-height:1.5}
+.send-log-line.ok{color:#4CAF81}.send-log-line.err{color:#E57373}.send-log-line.info{color:var(--accent)}
+.select-all-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--navy);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:12px;color:var(--text2)}
+.profile-hero{background:linear-gradient(135deg,var(--navy2),var(--card));border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:20px}
+.profile-avatar-lg{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.screen{animation:fadeIn 0.2s ease}
+.empty{text-align:center;padding:36px;color:var(--text2)}
+.empty .ico{font-size:32px;margin-bottom:10px}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;gap:14px;color:var(--text2)}
+
+#toast-wrap{position:fixed;bottom:20px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;animation:fadeIn 0.2s ease;max-width:300px}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--accent);color:var(--accent)}
+
+#modal-wrap{position:fixed;inset:0;background:#000000cc;z-index:300;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--navy2);border:1px solid var(--border);border-radius:14px 14px 0 0;padding:24px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto}
+.modal-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:18px}
+
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy2);border-top:1px solid var(--border);z-index:190;padding:8px 0}
+.bottom-nav-items{display:flex;justify-content:space-around}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer;color:var(--text2);font-size:10px;font-weight:500;min-width:48px}
+.bn-item.active{color:var(--gold)}.bn-icon{font-size:18px}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.open{display:block}.main{margin-left:0;padding-bottom:70px}
+  .menu-btn{display:block}.stats-grid{grid-template-columns:1fr 1fr}
+  .pipeline{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}
+  .form-grid-3{grid-template-columns:1fr 1fr}.market-grid{grid-template-columns:1fr}
+  .bottom-nav{display:block}.topbar-right .btn-ghost:not(.keep){display:none}
+  .modal{border-radius:14px 14px 0 0;max-height:88vh}
+}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.content{padding:14px}.topbar{padding:0 14px}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div id="root"></div>
+<div id="toast-wrap"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────
+const SB_URL='https://ntjifzhrhazybrqozkih.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50amlmemhyaGF6eWJycW96a2loIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNjg0NjYsImV4cCI6MjA4OTg0NDQ2Nn0.nA0WOhuBnA4yBz2Dz61ByjCK8xf_v3WVWpOvwZX-YoQ';
+const FROM_EMAIL='deals@propmatch.network';
+const REPLY_TO='snayder@nestseekers.com';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+// ── STATE ─────────────────────────────────────────────────────────
+const S={
+  user:null,profile:null,screen:'dashboard',
+  deals:[],investors:[],viewings:[],marketDeals:[],matches:[],
+  matchResult:null,loading:true,dbLive:false,
+  selectedInvestorIds:new Set(),currentMatchDeal:null,currentMatched:[],
+  newDeal:{title:'',asset_type:'',location:'',country:'',price:'',expected_yield:'',target_irr:'',deal_stage:'',finance_type:'',summary:'',listed_on_marketplace:false,marketplace_title:'',marketplace_summary:''},
+};
+
+// ── AUTH ──────────────────────────────────────────────────────────
+function openSidebar(){document.querySelector('.sidebar')?.classList.add('open');document.getElementById('overlay').classList.add('open');}
+function closeSidebar(){document.querySelector('.sidebar')?.classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+async function signIn(email,password){
+  const{data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){toast(error.message,'err');return;}
+  S.user=data.user;
+  await loadProfile();
+  await loadAll();
+}
+
+async function signUp(email,password,fullName,role){
+  const{data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:fullName,role}}});
+  if(error){toast(error.message,'err');return;}
+  toast('Account created! Please sign in.','ok');
+  // Switch to sign in tab
+  renderAuth('signin');
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  S.user=null;S.profile=null;S.screen='dashboard';
+  render();
+}
+
+async function loadProfile(){
+  if(!S.user)return;
+  const{data}=await sb.from('profiles').select('*').eq('id',S.user.id).single();
+  S.profile=data;
+}
+
+// ── DATA ──────────────────────────────────────────────────────────
+async function loadAll(){
+  S.loading=true;render();
+  try{
+    if(S.profile?.role==='agent'||S.profile?.role==='admin'){
+      const[d,i,v]=await Promise.all([
+        sb.from('deals').select('*').order('created_at',{ascending:false}),
+        sb.from('investors').select('*').order('created_at',{ascending:false}),
+        sb.from('viewings').select('*').order('viewing_date',{ascending:true}),
+      ]);
+      S.deals=d.data||[];S.investors=i.data||[];S.viewings=v.data||[];
+    }
+    if(S.profile?.role==='investor'||S.profile?.role==='admin'){
+      const{data:md}=await sb.from('deals').select('*').eq('listed_on_marketplace',true).order('created_at',{ascending:false});
+      S.marketDeals=md||[];
+      const{data:mx}=await sb.from('marketplace_matches').select('*').order('created_at',{ascending:false});
+      S.matches=mx||[];
+    }
+    if(S.profile?.role==='admin'){
+      const{data:md}=await sb.from('deals').select('*').eq('listed_on_marketplace',true).order('created_at',{ascending:false});
+      S.marketDeals=md||[];
+      const{data:mx}=await sb.from('marketplace_matches').select('*').order('created_at',{ascending:false});
+      S.matches=mx||[];
+    }
+    S.dbLive=true;
+  }catch(e){S.dbLive=false;toast('DB error: '+e.message,'err');}
+  S.loading=false;render();
+}
+
+async function saveDeal(deal){const{data,error}=await sb.from('deals').insert([{...deal,agent_id:S.user.id}]).select();if(error){toast(error.message,'err');return null;}toast('Deal saved ✓','ok');return data[0];}
+async function updateDeal(id,deal){const{error}=await sb.from('deals').update(deal).eq('id',id);if(error){toast(error.message,'err');return false;}toast('Updated ✓','ok');return true;}
+async function deleteDeal(id){await sb.from('deals').delete().eq('id',id);toast('Deleted','ok');await loadAll();}
+async function saveInvestor(inv){const{data,error}=await sb.from('investors').insert([{...inv,agent_id:S.user.id}]).select();if(error){toast(error.message,'err');return null;}toast('Investor added ✓','ok');return data[0];}
+async function updateInvestor(id,inv){const{error}=await sb.from('investors').update(inv).eq('id',id);if(error){toast(error.message,'err');return false;}toast('Updated ✓','ok');return true;}
+async function deleteInvestor(id){await sb.from('investors').delete().eq('id',id);toast('Removed','ok');await loadAll();}
+async function saveViewing(v){const{data,error}=await sb.from('viewings').insert([{...v,agent_id:S.user.id}]).select();if(error){toast(error.message,'err');return null;}toast('Viewing scheduled ✓','ok');return data[0];}
+async function updateViewing(id,status){await sb.from('viewings').update({status}).eq('id',id);await loadAll();}
+async function updateDealStatus(id,status,investors_matched){const u={status};if(investors_matched!==undefined)u.investors_matched=investors_matched;await sb.from('deals').update(u).eq('id',id);await loadAll();}
+async function updateProfile(updates){const{error}=await sb.from('profiles').update(updates).eq('id',S.user.id);if(error){toast(error.message,'err');return;}toast('Profile updated ✓','ok');await loadProfile();render();}
+
+async function requestIntro(dealId,agentId,message){
+  const{error}=await sb.from('marketplace_matches').insert([{deal_id:dealId,investor_profile_id:S.user.id,agent_id:agentId,status:'Requested',investor_message:message,requested_at:new Date().toISOString()}]);
+  if(error){toast(error.message,'err');return;}
+  toast('Intro requested ✓ Agent will be notified','ok');
+  await loadAll();
+}
+
+async function approveIntro(matchId){
+  const{error}=await sb.from('marketplace_matches').update({status:'Approved',investor_email_revealed:true,approved_at:new Date().toISOString()}).eq('id',matchId);
+  if(error){toast(error.message,'err');return;}
+  toast('Intro approved — investor email revealed','ok');
+  await loadAll();
+}
+
+async function declineIntro(matchId){
+  const{error}=await sb.from('marketplace_matches').update({status:'Declined'}).eq('id',matchId);
+  if(error){toast(error.message,'err');return;}
+  toast('Declined','ok');
+  await loadAll();
+}
+
+// ── MATCHING ──────────────────────────────────────────────────────
+function matchInvestors(deal){
+  return S.investors.filter(inv=>{
+    if(inv.status!=='Active')return false;
+    const assets=Array.isArray(inv.asset_preference)?inv.asset_preference:(inv.asset_preference||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const geos=Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean);
+    if(deal.asset_type&&assets.length&&!assets.some(a=>a.toLowerCase().includes(deal.asset_type.toLowerCase())||deal.asset_type.toLowerCase().includes(a.toLowerCase())))return false;
+    if(deal.country&&geos.length&&!geos.some(g=>g.toLowerCase().includes(deal.country.toLowerCase())||deal.country.toLowerCase().includes(g.toLowerCase())))return false;
+    const price=parseFloat(deal.price)||0;
+    if(price&&inv.min_investment&&price<inv.min_investment)return false;
+    if(price&&inv.max_investment&&price>inv.max_investment)return false;
+    const yld=parseFloat(deal.expected_yield)||0;
+    if(yld&&inv.min_yield&&yld<inv.min_yield)return false;
+    return true;
+  });
+}
+
+function matchesProfile(deal,profile){
+  if(!profile)return false;
+  const assets=Array.isArray(profile.asset_preference)?profile.asset_preference:(profile.asset_preference||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const geos=Array.isArray(profile.geography)?profile.geography:(profile.geography||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(deal.asset_type&&assets.length&&!assets.some(a=>a.toLowerCase().includes(deal.asset_type.toLowerCase())||deal.asset_type.toLowerCase().includes(a.toLowerCase())))return false;
+  if(deal.country&&geos.length&&!geos.some(g=>g.toLowerCase().includes(deal.country.toLowerCase())||deal.country.toLowerCase().includes(g.toLowerCase())))return false;
+  const price=parseFloat(deal.price)||0;
+  if(price&&profile.min_investment&&price<profile.min_investment)return false;
+  if(price&&profile.max_investment&&price>profile.max_investment)return false;
+  return true;
+}
+
+// ── EMAIL ─────────────────────────────────────────────────────────
+function buildEmailHTML(deal,investor){
+  const price=deal.price?'£'+Number(deal.price).toLocaleString():'—';
+  const yld=deal.expected_yield?deal.expected_yield+'%':'—';
+  const irr=deal.target_irr?deal.target_irr+'%':'—';
+  const firstName=investor.name.split(' ')[0];
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:32px 0"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="background:#0B1728;padding:24px 28px"><div style="font-family:Georgia,serif;font-size:20px;color:#C9A84C">PropMatch Network</div><div style="font-size:10px;color:#9AAFC8;letter-spacing:2px;text-transform:uppercase;margin-top:4px">New Deal Alert</div></td></tr><tr><td style="padding:28px"><p style="font-size:15px;color:#1A1A2E;margin:0 0 14px">Hi ${firstName},</p><p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 20px">A new opportunity matching your investment profile is available.</p><div style="background:#F8F9FF;border-left:4px solid #2D7DD2;border-radius:6px;padding:14px 16px;margin-bottom:20px"><div style="font-family:Georgia,serif;font-size:18px;color:#0B1728">${deal.title}</div><div style="font-size:12px;color:#888;margin-top:4px">${deal.location||''} ${deal.country?'· '+deal.country:''} · ${deal.asset_type||''}</div></div><table width="100%" cellpadding="0" cellspacing="4" style="margin-bottom:20px"><tr><td width="30%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Price</div><div style="font-family:Georgia,serif;font-size:16px;color:#0B1728;font-weight:bold">${price}</div></td><td width="5%"></td><td width="30%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Yield</div><div style="font-family:Georgia,serif;font-size:16px;color:#1A7A4A;font-weight:bold">${yld}</div></td><td width="5%"></td><td width="30%" style="text-align:center;padding:12px 6px;background:#F8F9FF;border-radius:8px"><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">IRR</div><div style="font-family:Georgia,serif;font-size:16px;color:#1A4F8A;font-weight:bold">${irr}</div></td></tr></table>${deal.summary?`<p style="font-size:14px;color:#444;line-height:1.7;margin:0 0 20px">${deal.summary}</p>`:''}<div style="background:#0B1728;border-radius:10px;padding:18px;text-align:center"><p style="color:#E8EDF5;font-size:14px;margin:0 0 12px">Reply <strong style="color:#C9A84C">YES</strong> if interested.</p><a href="mailto:${REPLY_TO}?subject=YES - ${deal.title}" style="background:linear-gradient(135deg,#2D7DD2,#1A4F8A);color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Reply YES →</a></div></td></tr><tr><td style="background:#F8F9FF;padding:16px 28px;border-top:1px solid #eee"><div style="font-size:13px;color:#333;font-weight:600">Snayder Andrade</div><div style="font-size:11px;color:#888">Nest Seekers International · The Property Source Group</div><div style="font-size:11px;color:#2D7DD2">${REPLY_TO}</div></td></tr></table></td></tr></table></body></html>`;
+}
+
+async function sendViaEdgeFunction(to,name,subject,html){
+  const{data:{session}}=await sb.auth.getSession();
+  const res=await fetch(SB_URL+'/functions/v1/send-email',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+(session?.access_token||SB_KEY)},
+    body:JSON.stringify({to,name,subject,html})
+  });
+  const d=await res.json();
+  if(!res.ok)throw new Error(d.error||'Send failed');
+  return d;
+}
+
+async function distributeEmails(dealId,selected){
+  const deal=S.deals.find(d=>d.id===dealId);if(!deal)return;
+  showModal(`<div class="modal-title">✉ Sending Deal Alert</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Deal: <strong style="color:var(--text)">${deal.title}</strong></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Sending to ${selected.length} investors from ${FROM_EMAIL}</div>
+    <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span id="spl">Preparing...</span><span id="spp">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="sp" style="width:0%"></div></div></div>
+    <div class="send-log" id="sl"></div>
+    <div style="margin-top:14px"><button class="btn btn-ghost" id="cls-btn" onclick="closeModal();loadAll()" disabled>Close</button></div>`);
+  function log(msg,type='info'){const el=document.getElementById('sl');if(!el)return;const d=document.createElement('div');d.className='send-log-line '+type;d.textContent='['+new Date().toLocaleTimeString()+'] '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+  let sent=0,failed=0;
+  log('Starting send to '+selected.length+' investors...','info');
+  for(let i=0;i<selected.length;i++){
+    const inv=selected[i];
+    if(!inv.email){log('⚠ Skipped '+inv.name+' — no email','err');failed++;}
+    else{
+      try{
+        await sendViaEdgeFunction(inv.email,inv.name,'New Deal Alert — '+deal.title+(deal.location?' | '+deal.location:''),buildEmailHTML(deal,inv));
+        sent++;log('✓ Sent to '+inv.name,'ok');
+      }catch(e){failed++;log('✗ Failed '+inv.name+': '+e.message,'err');}
+    }
+    const pct=Math.round(((i+1)/selected.length)*100);
+    const sp=document.getElementById('sp');const spp=document.getElementById('spp');const spl=document.getElementById('spl');
+    if(sp)sp.style.width=pct+'%';if(spp)spp.textContent=pct+'%';if(spl)spl.textContent=(i+1)+' of '+selected.length;
+    await new Promise(r=>setTimeout(r,300));
+  }
+  log('Done. '+sent+' sent, '+failed+' failed.',sent>0?'ok':'err');
+  const cb=document.getElementById('cls-btn');if(cb)cb.disabled=false;
+  if(sent>0)await updateDealStatus(dealId,'Distributed',sent);
+  toast('✉ '+sent+' emails sent','ok');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+const fmt=n=>n?'£'+Number(n).toLocaleString():'—';
+const fmtRange=(a,b)=>a&&b?fmt(a)+' – '+fmt(b):a?fmt(a)+'+':b?'Up to '+fmt(b):'—';
+function tagCls(s){return{New:'tag-amber',Matched:'tag-gold',Distributed:'tag-blue',Viewing:'tag-green',Completed:'tag-muted',Active:'tag-green',Paused:'tag-amber','Do Not Contact':'tag-red',Confirmed:'tag-green',Pending:'tag-amber','Slots Requested':'tag-muted',Requested:'tag-amber',Approved:'tag-green',Declined:'tag-red'}[s]||'tag-muted';}
+function fmtDate(d){if(!d)return{day:'—',mon:'—'};const dt=new Date(d);return{day:dt.getDate(),mon:dt.toLocaleString('default',{month:'short'}).toUpperCase()};}
+function initials(n){return(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();}
+function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;document.getElementById('toast-wrap').appendChild(el);setTimeout(()=>el.remove(),4000);}
+function closeModal(){const m=document.getElementById('modal-wrap');if(m)m.remove();}
+function showModal(html){closeModal();const d=document.createElement('div');d.id='modal-wrap';d.innerHTML='<div class="modal">'+html+'</div>';d.addEventListener('click',e=>{if(e.target===d)closeModal();});document.body.appendChild(d);}
+function go(screen){S.screen=screen;S.matchResult=null;render();window.scrollTo(0,0);closeSidebar();}
+
+// ── AUTH SCREEN ───────────────────────────────────────────────────
+let authMode='signin';let authRole='agent';
+function renderAuth(mode){
+  authMode=mode||authMode;
+  document.getElementById('root').innerHTML=`
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <div class="auth-logo">PropMatch</div>
+      <div class="auth-sub">Network</div>
+      <div class="auth-tabs">
+        <div class="auth-tab ${authMode==='signin'?'active':''}" onclick="renderAuth('signin')">Sign In</div>
+        <div class="auth-tab ${authMode==='signup'?'active':''}" onclick="renderAuth('signup')">Create Account</div>
+      </div>
+      ${authMode==='signup'?`
+        <div style="margin-bottom:14px">
+          <div class="fl" style="margin-bottom:8px">I am a...</div>
+          <div class="auth-role-select">
+            <div class="role-card ${authRole==='agent'?'selected':''}" onclick="authRole='agent';renderAuth()">
+              <div class="role-icon">◉</div>
+              <div class="role-label">Agent</div>
+              <div class="role-desc">I source & list deals</div>
+            </div>
+            <div class="role-card ${authRole==='investor'?'selected':''}" onclick="authRole='investor';renderAuth()">
+              <div class="role-icon">◎</div>
+              <div class="role-label">Investor</div>
+              <div class="role-desc">I browse & invest</div>
+            </div>
+          </div>
+        </div>
+        <div class="fg full" style="margin-bottom:12px">
+          <label class="fl">Full Name</label>
+          <input class="fi" id="auth-name" placeholder="Your full name"/>
+        </div>`:``}
+      <div class="fg full" style="margin-bottom:12px">
+        <label class="fl">Email</label>
+        <input class="fi" id="auth-email" type="email" placeholder="your@email.com"/>
+      </div>
+      <div class="fg full" style="margin-bottom:20px">
+        <label class="fl">Password</label>
+        <input class="fi" id="auth-password" type="password" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="${authMode==='signin'?'doSignIn()':'doSignUp()'}">
+        ${authMode==='signin'?'Sign In →':'Create Account →'}
+      </button>
+      ${authMode==='signin'?`<div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text2)">Don't have an account? <span style="color:var(--accent);cursor:pointer" onclick="renderAuth('signup')">Sign up</span></div>`:`<div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text2)">Already have an account? <span style="color:var(--accent);cursor:pointer" onclick="renderAuth('signin')">Sign in</span></div>`}
+    </div>
+  </div>`;
+}
+
+function doSignIn(){
+  const email=document.getElementById('auth-email')?.value.trim();
+  const pass=document.getElementById('auth-password')?.value;
+  if(!email||!pass){toast('Please fill all fields','err');return;}
+  signIn(email,pass);
+}
+
+function doSignUp(){
+  const email=document.getElementById('auth-email')?.value.trim();
+  const pass=document.getElementById('auth-password')?.value;
+  const name=document.getElementById('auth-name')?.value.trim();
+  if(!email||!pass||!name){toast('Please fill all fields','err');return;}
+  signUp(email,pass,name,authRole);
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────
+function renderSidebar(){
+  const role=S.profile?.role||'agent';
+  const agentNav=[
+    {id:'dashboard',ico:'◈',lbl:'Dashboard'},
+    {id:'deals',ico:'◉',lbl:'My Deals',badge:S.deals.filter(d=>d.status==='New').length||null},
+    {id:'add-deal',ico:'✦',lbl:'Add Deal'},
+    {id:'investors',ico:'◎',lbl:'My Investors'},
+    {id:'matching',ico:'⟡',lbl:'Match & Send'},
+    {id:'viewings',ico:'◷',lbl:'Viewings',badge:S.viewings.filter(v=>v.status==='Pending').length||null},
+    {id:'marketplace-agent',ico:'◫',lbl:'Marketplace'},
+    {id:'intros',ico:'↔',lbl:'Intro Requests',badge:S.matches.filter(m=>m.status==='Requested'&&m.agent_id===S.user?.id).length||null},
+    {id:'profile',ico:'◌',lbl:'My Profile'},
+  ];
+  const investorNav=[
+    {id:'dashboard',ico:'◈',lbl:'Dashboard'},
+    {id:'marketplace',ico:'◫',lbl:'Deal Marketplace'},
+    {id:'my-matches',ico:'⟡',lbl:'My Matches',badge:S.matches.filter(m=>m.investor_profile_id===S.user?.id&&m.status==='Approved').length||null},
+    {id:'profile',ico:'◌',lbl:'My Profile & Criteria'},
+  ];
+  const adminNav=[
+    {id:'dashboard',ico:'◈',lbl:'Dashboard'},
+    {id:'deals',ico:'◉',lbl:'All Deals'},
+    {id:'investors',ico:'◎',lbl:'All Investors'},
+    {id:'marketplace',ico:'◫',lbl:'Marketplace'},
+    {id:'intros',ico:'↔',lbl:'All Intro Requests'},
+    {id:'profile',ico:'◌',lbl:'Profile'},
+  ];
+  const nav=role==='investor'?investorNav:role==='admin'?adminNav:agentNav;
+  const avatarClass=role==='investor'?'investor':role==='admin'?'admin':'agent';
+  const roleBadge=role==='investor'?'role-investor':role==='admin'?'role-admin':'role-agent';
+  return`<div class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-text">PropMatch</div>
+      <div class="logo-sub">Network</div>
+      <div class="db-status ${S.dbLive?'live':''}"><span class="db-dot ${S.dbLive?'live':''}"></span>${S.dbLive?'Connected':'Connecting...'}</div>
+    </div>
+    <nav class="nav">
+      ${nav.map(n=>`<div class="nav-item ${S.screen===n.id?'active':''}" onclick="go('${n.id}')"><span class="nav-icon">${n.ico}</span>${n.lbl}${n.badge?`<span class="nav-badge">${n.badge}</span>`:''}</div>`).join('')}
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar ${avatarClass}">${initials(S.profile?.full_name||'')}</div>
+        <div>
+          <div class="user-name">${S.profile?.full_name||S.user?.email||''}</div>
+          <span class="user-role-badge ${roleBadge}">${role}</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>`;
+}
+
+function renderBottomNav(){
+  const role=S.profile?.role||'agent';
+  const agentItems=[{id:'dashboard',ico:'◈',lbl:'Home'},{id:'deals',ico:'◉',lbl:'Deals'},{id:'add-deal',ico:'✦',lbl:'Add'},{id:'matching',ico:'⟡',lbl:'Match'},{id:'marketplace-agent',ico:'◫',lbl:'Market'}];
+  const investorItems=[{id:'dashboard',ico:'◈',lbl:'Home'},{id:'marketplace',ico:'◫',lbl:'Market'},{id:'my-matches',ico:'⟡',lbl:'Matches'},{id:'profile',ico:'◌',lbl:'Profile'}];
+  const items=role==='investor'?investorItems:agentItems;
+  return`<div class="bottom-nav"><div class="bottom-nav-items">${items.map(n=>`<div class="bn-item ${S.screen===n.id?'active':''}" onclick="go('${n.id}')"><span class="bn-icon">${n.ico}</span><span>${n.lbl}</span></div>`).join('')}</div></div>`;
+}
+
+function topbar(title,sub,actions=''){
+  return`<div class="topbar"><div class="topbar-left"><button class="menu-btn" onclick="openSidebar()">☰</button><div><div class="page-title">${title}</div>${sub?`<div class="page-sub">${sub}</div>`:''}</div></div><div class="topbar-right">${actions}</div></div>`;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard(){
+  const role=S.profile?.role||'agent';
+  if(role==='investor') return renderInvestorDashboard();
+  if(role==='admin') return renderAdminDashboard();
+  // Agent dashboard
+  const confirmed=S.viewings.filter(v=>v.status==='Confirmed').length;
+  const pending=S.viewings.filter(v=>v.status==='Pending').length;
+  const sent=S.deals.reduce((a,d)=>a+(d.investors_matched||0),0);
+  const pendingIntros=S.matches.filter(m=>m.status==='Requested').length;
+  return`<div class="screen">
+    ${topbar('Dashboard','Agent — '+S.profile?.full_name,`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button><button class="btn btn-primary" onclick="go('add-deal')">+ Deal</button>`)}
+    <div class="content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">My Deals</div><div class="stat-value">${S.deals.length}</div><div class="stat-sub up">Active</div></div>
+        <div class="stat-card"><div class="stat-label">My Investors</div><div class="stat-value">${S.investors.length}</div><div class="stat-sub up">In DB</div></div>
+        <div class="stat-card"><div class="stat-label">Viewings</div><div class="stat-value">${confirmed}</div><div class="stat-sub amber">${pending} pending</div></div>
+        <div class="stat-card"><div class="stat-label">Intro Requests</div><div class="stat-value">${pendingIntros}</div><div class="stat-sub ${pendingIntros>0?'amber':'up'}">${pendingIntros>0?'Needs action':'All clear'}</div></div>
+      </div>
+      <div class="sec-header"><div class="sec-title">My Pipeline</div><button class="btn btn-ghost btn-sm" onclick="go('deals')">All →</button></div>
+      <div class="pipeline">${['New','Matched','Distributed','Viewing'].map(status=>`<div class="p-col"><div class="p-col-head"><span>${status}</span><span class="p-count">${S.deals.filter(d=>d.status===status).length}</span></div>${S.deals.filter(d=>d.status===status).map(d=>`<div class="deal-chip" onclick="go('deals')"><div class="dc-title">${d.title}</div><div class="dc-price">${fmt(d.price)}</div></div>`).join('')||'<div style="font-size:11px;color:var(--text2);text-align:center;padding:8px">—</div>'}</div>`).join('')}</div>
+      ${pendingIntros>0?`<div class="sec-header"><div class="sec-title">Pending Intro Requests</div><button class="btn btn-ghost btn-sm" onclick="go('intros')">View all →</button></div>${S.matches.filter(m=>m.status==='Requested').slice(0,2).map(m=>`<div class="notif-item"><div class="notif-dot"></div><div><div class="notif-title">Investor interested in your deal</div><div class="notif-meta">${m.investor_message||'No message'} · <span style="color:var(--amber)">${m.status}</span></div></div><button class="btn btn-success btn-sm" onclick="go('intros')">Review</button></div>`).join('')}`:''}
+      ${S.viewings.length?`<div class="sec-header" style="margin-top:16px"><div class="sec-title">Upcoming Viewings</div></div><div class="card"><div class="card-body" style="padding:10px 14px">${S.viewings.slice(0,3).map(v=>{const{day,mon}=fmtDate(v.viewing_date);return`<div class="viewing-card"><div class="vdate" style="background:var(--accent)"><div class="vday">${day}</div><div class="vmon">${mon}</div></div><div class="vinfo"><div class="vtitle">${v.deal_title}</div><div class="vsub">${v.investor_name}</div></div><span class="tag ${tagCls(v.status)}">${v.status}</span></div>`;}).join('')}</div></div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderInvestorDashboard(){
+  const matched=S.marketDeals.filter(d=>matchesProfile(d,S.profile));
+  const approved=S.matches.filter(m=>m.status==='Approved');
+  const requested=S.matches.filter(m=>m.status==='Requested');
+  return`<div class="screen">
+    ${topbar('Dashboard','Investor — '+S.profile?.full_name,`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button><button class="btn btn-primary" onclick="go('marketplace')">Browse Deals</button>`)}
+    <div class="content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Deals on Market</div><div class="stat-value">${S.marketDeals.length}</div><div class="stat-sub up">Live</div></div>
+        <div class="stat-card"><div class="stat-label">Matching My Criteria</div><div class="stat-value">${matched.length}</div><div class="stat-sub ${matched.length>0?'up':'amber'}">Based on profile</div></div>
+        <div class="stat-card"><div class="stat-label">Intros Requested</div><div class="stat-value">${requested.length}</div><div class="stat-sub amber">Pending agent</div></div>
+        <div class="stat-card"><div class="stat-label">Intros Approved</div><div class="stat-value">${approved.length}</div><div class="stat-sub up">Connected</div></div>
+      </div>
+      ${matched.length>0?`<div class="sec-header"><div class="sec-title">Deals Matching Your Profile</div><button class="btn btn-ghost btn-sm" onclick="go('marketplace')">View all →</button></div><div class="market-grid">${matched.slice(0,3).map(d=>renderMarketCard(d,true)).join('')}</div>`:`
+      <div class="card"><div class="card-body" style="text-align:center;padding:32px">
+        <div style="font-size:32px;margin-bottom:12px">◎</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px">No matching deals yet</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Update your investment criteria in your profile to get matched with relevant opportunities.</div>
+        <button class="btn btn-primary" onclick="go('profile')">Update Profile →</button>
+      </div></div>`}
+    </div>
+  </div>`;
+}
+
+function renderAdminDashboard(){
+  return`<div class="screen">
+    ${topbar('Admin Dashboard','Full platform view',`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button>`)}
+    <div class="content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Total Deals</div><div class="stat-value">${S.deals.length}</div><div class="stat-sub up">All agents</div></div>
+        <div class="stat-card"><div class="stat-label">Investors</div><div class="stat-value">${S.investors.length}</div><div class="stat-sub up">In DB</div></div>
+        <div class="stat-card"><div class="stat-label">On Marketplace</div><div class="stat-value">${S.marketDeals.length}</div><div class="stat-sub purple">Public</div></div>
+        <div class="stat-card"><div class="stat-label">Intro Requests</div><div class="stat-value">${S.matches.length}</div><div class="stat-sub amber">${S.matches.filter(m=>m.status==='Requested').length} pending</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── AGENT: DEALS ──────────────────────────────────────────────────
+function renderDeals(){
+  return`<div class="screen">
+    ${topbar('My Deals',S.deals.length+' deals',`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button><button class="btn btn-primary" onclick="go('add-deal')">+ Deal</button>`)}
+    <div class="content">${S.deals.length===0?'<div class="card"><div class="empty"><div class="ico">◉</div><p>No deals yet.</p><br/><button class="btn btn-primary" onclick="go(\'add-deal\')">+ Add Deal</button></div></div>':`
+    <div class="card"><div class="table-wrap"><table class="table">
+      <thead><tr><th>Deal</th><th>Type</th><th>Price</th><th>Yield</th><th>Status</th><th>Market</th><th>Sent</th><th></th></tr></thead>
+      <tbody>${S.deals.map(d=>`<tr>
+        <td><div style="font-weight:600;font-size:13px">${d.title}</div><div style="font-size:11px;color:var(--text2)">${d.location||''}${d.country?', '+d.country:''}</div></td>
+        <td><span class="tag tag-blue">${d.asset_type||'—'}</span></td>
+        <td style="font-family:'DM Mono',monospace;color:var(--gold);font-size:12px">${fmt(d.price)}</td>
+        <td style="color:var(--green);font-weight:600">${d.expected_yield||0}%</td>
+        <td><span class="tag ${tagCls(d.status)}">${d.status}</span></td>
+        <td><span class="tag ${d.listed_on_marketplace?'tag-green':'tag-muted'}">${d.listed_on_marketplace?'Listed':'Private'}</span></td>
+        <td style="text-align:center;font-weight:700">${d.investors_matched||0}</td>
+        <td><div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" onclick="showEditDealModal('${d.id}')">✏</button>
+          <button class="btn btn-ghost btn-sm" onclick="go('matching')">Match</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Delete?'))deleteDeal('${d.id}')">✕</button>
+        </div></td>
+      </tr>`).join('')}</tbody>
+    </table></div></div>`}</div></div>`;
+}
+
+// ── AGENT: ADD DEAL ───────────────────────────────────────────────
+function renderAddDeal(){
+  const d=S.newDeal;const m=S.matchResult;
+  return`<div class="screen">
+    ${topbar('Add New Deal','Saved to your account')}
+    <div class="content">
+      <div class="card" style="margin-bottom:14px"><div class="card-head">Deal Details</div><div class="card-body"><div class="form-grid">
+        <div class="fg full"><label class="fl">Deal Title *</label><input class="fi" id="f-title" placeholder="e.g. Florence Hotel Portfolio – 42 Keys" value="${d.title}"/></div>
+        <div class="fg"><label class="fl">Asset Type</label><select class="fi" id="f-type"><option value="">Select</option>${['Residential','Hospitality','Commercial','Mixed-Use','Land','PBSA','BTR'].map(t=>`<option ${d.asset_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fg"><label class="fl">Deal Stage</label><select class="fi" id="f-stage"><option value="">Select</option>${['Off-Market','Exclusive','Under Offer','Open Market'].map(t=>`<option ${d.deal_stage===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fg"><label class="fl">City</label><input class="fi" id="f-loc" placeholder="Florence" value="${d.location}"/></div>
+        <div class="fg"><label class="fl">Country</label><select class="fi" id="f-country"><option value="">Select</option>${['UK','Italy','Germany','Spain','Portugal','Switzerland','Europe','Ireland'].map(t=>`<option ${d.country===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fg"><label class="fl">Price (£)</label><input class="fi" id="f-price" type="number" placeholder="4200000" value="${d.price}"/></div>
+        <div class="fg"><label class="fl">Yield (%)</label><input class="fi" id="f-yield" type="number" placeholder="6.2" value="${d.expected_yield}"/></div>
+        <div class="fg"><label class="fl">IRR (%)</label><input class="fi" id="f-irr" type="number" placeholder="22" value="${d.target_irr}"/></div>
+        <div class="fg"><label class="fl">Finance</label><select class="fi" id="f-finance"><option value="">Select</option>${['Cash','Bridging','Refinance','Structured','Flexible'].map(t=>`<option ${d.finance_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fg full"><label class="fl">Summary</label><textarea class="fi fi-ta" id="f-summary" placeholder="2–4 sentence overview...">${d.summary}</textarea></div>
+      </div></div></div>
+
+      <div class="card" style="margin-bottom:14px"><div class="card-head">Marketplace Listing</div><div class="card-body">
+        <div class="toggle-wrap" onclick="S.newDeal.listed_on_marketplace=!S.newDeal.listed_on_marketplace;renderAddDealInPlace()">
+          <div class="toggle ${d.listed_on_marketplace?'on':''}"></div>
+          <div><div style="font-size:13px;font-weight:600">List on Open Marketplace</div><div style="font-size:11px;color:var(--text2)">Visible to all investors — details are blinded (no address, no agent name)</div></div>
+        </div>
+        ${d.listed_on_marketplace?`
+        <div class="form-grid" style="margin-top:12px">
+          <div class="fg"><label class="fl">Blinded Title</label><input class="fi" id="f-mtitle" placeholder="e.g. Hospitality Asset – Florence Area" value="${d.marketplace_title}"/></div>
+          <div class="fg full"><label class="fl">Blinded Summary (no identifying details)</label><textarea class="fi fi-ta" id="f-msummary" placeholder="Describe the opportunity without revealing the address or your identity...">${d.marketplace_summary}</textarea></div>
+        </div>`:``}
+      </div></div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="runMatchForm()">⟡ Match My Investors</button>
+        <button class="btn btn-ghost" onclick="submitDeal()">Save Deal</button>
+      </div>
+
+      ${m!==null?`<div class="card" style="margin-top:16px"><div class="card-head"><span>Match Results — ${m.length} investors</span><span style="font-size:12px;color:var(--green);font-weight:500">${m.filter(i=>i.email).length} with email</span></div><div class="card-body">
+        <div style="font-family:'DM Serif Display',serif;font-size:40px;color:var(--gold)">${m.length}</div>
+        <div style="color:var(--text2);font-size:13px;margin-bottom:14px">from your investor database · <span style="color:var(--green)">${m.filter(i=>i.email).length} with email</span></div>
+        <div class="select-all-bar"><span id="sel-count">${m.filter(i=>i.email).length} selected</span><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="toggleAll(true)">All</button><button class="btn btn-ghost btn-sm" onclick="toggleAll(false)">None</button></div></div>
+        ${m.map((inv,i)=>`<div class="match-row ${inv.email?'selected':''}" id="mr-${i}" onclick="toggleRow(${i},'${inv.id}')"><input type="checkbox" class="match-checkbox" id="cb-${i}" ${inv.email?'checked':''} ${!inv.email?'disabled':''} onclick="event.stopPropagation();toggleRow(${i},'${inv.id}')"/><div style="flex:1"><div style="font-weight:600;font-size:13px">${inv.name}</div><div style="font-size:11px;color:var(--text2)">${inv.email||'No email on file'}</div></div><span class="tag ${inv.email?'tag-green':'tag-amber'}">${inv.email?'✓':'—'}</span></div>`).join('')}
+        ${m.filter(i=>i.email).length>0?`<button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="sendSelected()">✉ Send to Selected</button>`:''}
+      </div></div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderAddDealInPlace(){const el=document.getElementById('add-deal-content');if(!el)return;el.innerHTML=renderAddDeal();}
+
+function readDealForm(){return{
+  title:document.getElementById('f-title')?.value.trim()||'',
+  asset_type:document.getElementById('f-type')?.value||'',
+  deal_stage:document.getElementById('f-stage')?.value||'',
+  location:document.getElementById('f-loc')?.value.trim()||'',
+  country:document.getElementById('f-country')?.value||'',
+  price:parseFloat(document.getElementById('f-price')?.value)||null,
+  expected_yield:parseFloat(document.getElementById('f-yield')?.value)||null,
+  target_irr:parseFloat(document.getElementById('f-irr')?.value)||null,
+  finance_type:document.getElementById('f-finance')?.value||'',
+  summary:document.getElementById('f-summary')?.value.trim()||'',
+  listed_on_marketplace:S.newDeal.listed_on_marketplace,
+  marketplace_title:document.getElementById('f-mtitle')?.value.trim()||'',
+  marketplace_summary:document.getElementById('f-msummary')?.value.trim()||'',
+};}
+
+function runMatchForm(){S.matchResult=matchInvestors(readDealForm());S.currentMatched=S.matchResult;S.selectedInvestorIds=new Set(S.matchResult.filter(i=>i.email).map(i=>i.id));S.currentMatchDeal=null;render();}
+
+async function submitDeal(){
+  const deal=readDealForm();
+  if(!deal.title){toast('Title required','err');return;}
+  deal.status='New';deal.investors_matched=0;
+  const r=await saveDeal(deal);
+  if(r){S.newDeal={title:'',asset_type:'',location:'',country:'',price:'',expected_yield:'',target_irr:'',deal_stage:'',finance_type:'',summary:'',listed_on_marketplace:false,marketplace_title:'',marketplace_summary:''};S.matchResult=null;await loadAll();S.screen='deals';render();}
+}
+
+function toggleRow(i,invId){const cb=document.getElementById('cb-'+i);const row=document.getElementById('mr-'+i);if(!cb||cb.disabled)return;cb.checked=!cb.checked;if(cb.checked){row.classList.add('selected');S.selectedInvestorIds.add(invId);}else{row.classList.remove('selected');S.selectedInvestorIds.delete(invId);}const sel=document.getElementById('sel-count');if(sel)sel.textContent=S.selectedInvestorIds.size+' selected';}
+function toggleAll(checked){S.currentMatched.forEach((inv,i)=>{if(!inv.email)return;const cb=document.getElementById('cb-'+i);const row=document.getElementById('mr-'+i);if(!cb)return;cb.checked=checked;if(checked){row.classList.add('selected');S.selectedInvestorIds.add(inv.id);}else{row.classList.remove('selected');S.selectedInvestorIds.delete(inv.id);}});const sel=document.getElementById('sel-count');if(sel)sel.textContent=S.selectedInvestorIds.size+' selected';}
+async function sendSelected(){if(S.selectedInvestorIds.size===0){toast('No investors selected','err');return;}const selected=S.currentMatched.filter(inv=>S.selectedInvestorIds.has(inv.id)&&inv.email);if(!S.currentMatchDeal){const deal=readDealForm();if(!deal.title){toast('Save or fill in deal title first','err');return;}deal.status='New';deal.investors_matched=0;const saved=await saveDeal(deal);if(!saved)return;await loadAll();S.currentMatchDeal=saved.id;}await distributeEmails(S.currentMatchDeal,selected);}
+
+// ── EDIT DEAL MODAL ───────────────────────────────────────────────
+function showEditDealModal(id){
+  const d=S.deals.find(x=>x.id===id);if(!d)return;
+  showModal(`<div class="modal-title">✏ Edit Deal</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg full"><label class="fl">Title</label><input class="fi" id="ed-title" value="${d.title||''}"/></div>
+      <div class="fg"><label class="fl">Asset Type</label><select class="fi" id="ed-type"><option value="">Select</option>${['Residential','Hospitality','Commercial','Mixed-Use','Land','PBSA','BTR'].map(t=>`<option ${d.asset_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Stage</label><select class="fi" id="ed-stage"><option value="">Select</option>${['Off-Market','Exclusive','Under Offer','Open Market'].map(t=>`<option ${d.deal_stage===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Status</label><select class="fi" id="ed-status">${['New','Matched','Distributed','Viewing','Completed'].map(t=>`<option ${d.status===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">City</label><input class="fi" id="ed-loc" value="${d.location||''}"/></div>
+      <div class="fg"><label class="fl">Country</label><select class="fi" id="ed-country"><option value="">Select</option>${['UK','Italy','Germany','Spain','Portugal','Switzerland','Europe','Ireland'].map(t=>`<option ${d.country===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Price (£)</label><input class="fi" id="ed-price" type="number" value="${d.price||''}"/></div>
+      <div class="fg"><label class="fl">Yield (%)</label><input class="fi" id="ed-yield" type="number" value="${d.expected_yield||''}"/></div>
+      <div class="fg"><label class="fl">IRR (%)</label><input class="fi" id="ed-irr" type="number" value="${d.target_irr||''}"/></div>
+      <div class="fg"><label class="fl">Finance</label><select class="fi" id="ed-finance"><option value="">Select</option>${['Cash','Bridging','Refinance','Structured','Flexible'].map(t=>`<option ${d.finance_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg full"><label class="fl">Summary</label><textarea class="fi fi-ta" id="ed-summary">${d.summary||''}</textarea></div>
+      <div class="fg full">
+        <label class="fl" style="margin-bottom:8px">Listed on Marketplace</label>
+        <select class="fi" id="ed-market"><option value="false" ${!d.listed_on_marketplace?'selected':''}>No — Private</option><option value="true" ${d.listed_on_marketplace?'selected':''}>Yes — Public (blinded)</option></select>
+      </div>
+      <div class="fg"><label class="fl">Blinded Title</label><input class="fi" id="ed-mtitle" value="${d.marketplace_title||''}"/></div>
+      <div class="fg full"><label class="fl">Blinded Summary</label><textarea class="fi fi-ta" id="ed-msummary">${d.marketplace_summary||''}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="submitEditDeal('${id}')">Save Changes</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>`);
+  setTimeout(()=>{const s=document.getElementById('ed-country');if(s)s.value=d.country||'';},50);
+}
+
+async function submitEditDeal(id){
+  const deal={
+    title:document.getElementById('ed-title').value.trim(),
+    asset_type:document.getElementById('ed-type').value,
+    deal_stage:document.getElementById('ed-stage').value,
+    status:document.getElementById('ed-status').value,
+    location:document.getElementById('ed-loc').value.trim(),
+    country:document.getElementById('ed-country').value,
+    price:parseFloat(document.getElementById('ed-price').value)||null,
+    expected_yield:parseFloat(document.getElementById('ed-yield').value)||null,
+    target_irr:parseFloat(document.getElementById('ed-irr').value)||null,
+    finance_type:document.getElementById('ed-finance').value,
+    summary:document.getElementById('ed-summary').value.trim(),
+    listed_on_marketplace:document.getElementById('ed-market').value==='true',
+    marketplace_title:document.getElementById('ed-mtitle').value.trim(),
+    marketplace_summary:document.getElementById('ed-msummary').value.trim(),
+  };
+  closeModal();const ok=await updateDeal(id,deal);if(ok){await loadAll();render();}
+}
+
+// ── AGENT: INVESTORS ──────────────────────────────────────────────
+function renderInvestors(){
+  return`<div class="screen">
+    ${topbar('My Investors',S.investors.length+' in your database',`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button><button class="btn btn-ghost keep btn-sm" onclick="showImportModal()">⬆ Import</button><button class="btn btn-primary" onclick="showInvestorModal(null)">+ Add</button>`)}
+    <div class="content">${S.investors.length===0?`<div class="card"><div class="empty"><div class="ico">◎</div><p>No investors in your database yet.</p><br/><button class="btn btn-primary" onclick="showImportModal()">Import 32 Investors</button></div></div>`:`
+    <div class="card"><div class="table-wrap"><table class="table">
+      <thead><tr><th>Name</th><th>Type</th><th>Ticket</th><th>Geography</th><th>Status</th><th></th></tr></thead>
+      <tbody>${S.investors.map(inv=>{const geos=Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean);return`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--accent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${initials(inv.name)}</div>
+          <div><div style="font-weight:600;font-size:13px">${inv.name}</div>${inv.email?`<div style="font-size:10px;color:var(--text2)">${inv.email}</div>`:''}</div>
+        </div></td>
+        <td style="font-size:11px">${(inv.investor_type||'—').split('/')[0].trim()}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold)">${fmt(inv.min_investment)}${inv.max_investment?' – '+fmt(inv.max_investment):''}</td>
+        <td style="font-size:11px;color:var(--text2)">${geos.slice(0,2).join(', ')||'—'}</td>
+        <td><span class="tag ${tagCls(inv.status)}">${inv.status}</span></td>
+        <td><div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" onclick="showInvestorModal('${inv.id}')">✏</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Remove?'))deleteInvestor('${inv.id}')">✕</button>
+        </div></td>
+      </tr>`;}).join('')}</tbody>
+    </table></div></div>`}</div></div>`;
+}
+
+function showInvestorModal(id){
+  const inv=id?S.investors.find(x=>x.id===id):null;
+  const assets=inv?(Array.isArray(inv.asset_preference)?inv.asset_preference:(inv.asset_preference||'').split(',').map(s=>s.trim()).filter(Boolean)).join(', '):'';
+  const geos=inv?(Array.isArray(inv.geography)?inv.geography:(inv.geography||'').split(',').map(s=>s.trim()).filter(Boolean)).join(', '):'';
+  showModal(`<div class="modal-title">${inv?'✏ Edit Investor':'Add Investor'}</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="i-name" value="${inv?.name||''}" placeholder="James Whitmore"/></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="i-email" value="${inv?.email||''}" placeholder="james@fund.com"/></div>
+      <div class="fg"><label class="fl">Investor Type</label><select class="fi" id="i-type"><option value="">Select</option>${['Family Office','Institutional Fund','UHNWI','HNW Individual','Private Investor','Developer','Fund / Private Equity','Operator / Hospitality'].map(t=>`<option ${inv?.investor_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Status</label><select class="fi" id="i-status">${['Active','Paused','Do Not Contact'].map(t=>`<option ${(inv?.status||'Active')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Assets (comma sep)</label><input class="fi" id="i-assets" value="${assets}" placeholder="Hospitality, Residential"/></div>
+      <div class="fg"><label class="fl">Geography (comma sep)</label><input class="fi" id="i-geo" value="${geos}" placeholder="UK, Italy"/></div>
+      <div class="fg"><label class="fl">Min (£)</label><input class="fi" id="i-min" type="number" value="${inv?.min_investment||''}"/></div>
+      <div class="fg"><label class="fl">Max (£)</label><input class="fi" id="i-max" type="number" value="${inv?.max_investment||''}"/></div>
+      <div class="fg"><label class="fl">Min Yield %</label><input class="fi" id="i-yield" type="number" value="${inv?.min_yield||''}"/></div>
+      <div class="fg"><label class="fl">Min IRR %</label><input class="fi" id="i-irr" type="number" value="${inv?.min_irr||''}"/></div>
+      <div class="fg full"><label class="fl">Notes</label><textarea class="fi fi-ta" id="i-notes">${inv?.notes||''}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="submitInvestor('${id||''}')">${inv?'Save Changes':'Add Investor'}</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+
+async function submitInvestor(id){
+  const name=document.getElementById('i-name').value.trim();
+  if(!name){toast('Name required','err');return;}
+  const inv={name,email:document.getElementById('i-email').value.trim()||null,investor_type:document.getElementById('i-type').value,status:document.getElementById('i-status').value,asset_preference:document.getElementById('i-assets').value.split(',').map(s=>s.trim()).filter(Boolean),geography:document.getElementById('i-geo').value.split(',').map(s=>s.trim()).filter(Boolean),min_investment:parseFloat(document.getElementById('i-min').value)||null,max_investment:parseFloat(document.getElementById('i-max').value)||null,min_yield:parseFloat(document.getElementById('i-yield').value)||null,min_irr:parseFloat(document.getElementById('i-irr').value)||null,notes:document.getElementById('i-notes').value.trim()};
+  closeModal();
+  if(id){await updateInvestor(id,inv);}else{await saveInvestor(inv);}
+  await loadAll();render();
+}
+
+// ── AGENT: MATCHING ───────────────────────────────────────────────
+function renderMatching(){
+  return`<div class="screen">
+    ${topbar('Match & Distribute','Send deals to your investors')}
+    <div class="content">
+      <div class="sec-header"><div class="sec-title">Select a Deal</div></div>
+      ${S.deals.length===0?'<div class="card"><div class="empty"><div class="ico">◉</div><p>No deals yet.</p></div></div>':S.deals.map(d=>`<div class="deal-chip" style="margin-bottom:10px" onclick="runMatchDeal('${d.id}')"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="dc-title" style="font-size:14px">${d.title}</div><div class="dc-meta">${d.asset_type||''} · ${d.location||''}${d.country?', '+d.country:''}</div><div class="dc-price">${fmt(d.price)} · ${d.expected_yield||0}% yield</div></div><span class="tag ${tagCls(d.status)}">${d.status}</span></div></div>`).join('')}
+      <div id="match-results"></div>
+    </div>
+  </div>`;
+}
+
+function runMatchDeal(id){
+  const deal=S.deals.find(d=>d.id===id);if(!deal)return;
+  const matched=matchInvestors(deal);
+  S.currentMatchDeal=id;S.currentMatched=matched;
+  S.selectedInvestorIds=new Set(matched.filter(i=>i.email).map(i=>i.id));
+  const panel=document.getElementById('match-results');if(!panel)return;
+  panel.innerHTML=`<div class="card" style="margin-top:16px"><div class="card-head"><span>${matched.length} investors match — ${deal.title}</span><span style="font-size:12px;color:var(--green)">${matched.filter(i=>i.email).length} with email</span></div><div class="card-body">
+    ${matched.length===0?'<div class="empty" style="padding:20px"><div class="ico">🔍</div><p>No matches. Try adding more investors or check your criteria.</p></div>':`
+    <div class="select-all-bar"><span id="sel-count-m">${matched.filter(i=>i.email).length} selected</span><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="toggleAllMatch(true)">All</button><button class="btn btn-ghost btn-sm" onclick="toggleAllMatch(false)">None</button></div></div>
+    ${matched.map((inv,i)=>`<div class="match-row ${inv.email?'selected':''}" id="mmr-${i}" onclick="toggleMatchRow(${i},'${inv.id}')"><input type="checkbox" class="match-checkbox" id="mcb-${i}" ${inv.email?'checked':''} ${!inv.email?'disabled':''} onclick="event.stopPropagation();toggleMatchRow(${i},'${inv.id}')"/><div style="flex:1"><div style="font-weight:600;font-size:13px">${inv.name}</div><div style="font-size:11px;color:var(--text2)">${inv.investor_type||''} · ${inv.email||'No email'}</div></div><span class="tag ${inv.email?'tag-green':'tag-amber'}">${inv.email?'✓ Email':'No email'}</span></div>`).join('')}
+    <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="sendMatchSelected()">✉ Send to Selected</button>`}
+  </div></div>`;
+}
+
+function toggleMatchRow(i,invId){const cb=document.getElementById('mcb-'+i);const row=document.getElementById('mmr-'+i);if(!cb||cb.disabled)return;cb.checked=!cb.checked;if(cb.checked){row.classList.add('selected');S.selectedInvestorIds.add(invId);}else{row.classList.remove('selected');S.selectedInvestorIds.delete(invId);}const sel=document.getElementById('sel-count-m');if(sel)sel.textContent=S.selectedInvestorIds.size+' selected';}
+function toggleAllMatch(checked){S.currentMatched.forEach((inv,i)=>{if(!inv.email)return;const cb=document.getElementById('mcb-'+i);const row=document.getElementById('mmr-'+i);if(!cb)return;cb.checked=checked;if(checked){row.classList.add('selected');S.selectedInvestorIds.add(inv.id);}else{row.classList.remove('selected');S.selectedInvestorIds.delete(inv.id);}});const sel=document.getElementById('sel-count-m');if(sel)sel.textContent=S.selectedInvestorIds.size+' selected';}
+async function sendMatchSelected(){if(S.selectedInvestorIds.size===0){toast('No investors selected','err');return;}const selected=S.currentMatched.filter(inv=>S.selectedInvestorIds.has(inv.id)&&inv.email);await distributeEmails(S.currentMatchDeal,selected);}
+
+// ── AGENT: VIEWINGS ───────────────────────────────────────────────
+function renderViewings(){
+  return`<div class="screen">
+    ${topbar('Viewing Scheduler',S.viewings.length+' viewings',`<button class="btn btn-primary" onclick="showViewingModal()">+ Schedule</button>`)}
+    <div class="content">
+      ${['Slots Requested','Pending','Confirmed'].map(status=>`
+        <div class="sec-header" style="margin-bottom:8px"><div class="sec-title" style="font-size:14px">${status}</div><span class="nav-badge">${S.viewings.filter(v=>v.status===status).length}</span></div>
+        ${S.viewings.filter(v=>v.status===status).map(v=>{const{day,mon}=fmtDate(v.viewing_date);return`<div class="viewing-card"><div class="vdate" style="background:${status==='Confirmed'?'var(--green)':status==='Pending'?'var(--amber)':'var(--border)'}"><div class="vday">${day}</div><div class="vmon">${mon}</div></div><div class="vinfo"><div class="vtitle">${v.deal_title}</div><div class="vsub">${v.investor_name} · ${v.viewing_time||''}</div></div>${status==='Pending'?`<button class="btn btn-success btn-sm" onclick="updateViewing('${v.id}','Confirmed')">Confirm</button>`:`<span class="tag ${tagCls(v.status)}">${v.status}</span>`}</div>`;}).join('')||`<div style="font-size:12px;color:var(--text2);padding:6px 0 16px">None</div>`}
+      `).join('')}
+    </div>
+  </div>`;
+}
+function showViewingModal(){showModal(`<div class="modal-title">Schedule Viewing</div><div class="form-grid" style="margin-bottom:12px"><div class="fg"><label class="fl">Deal</label><select class="fi" id="v-deal"><option value="">Select</option>${S.deals.map(d=>`<option value="${d.id}">${d.title}</option>`).join('')}</select></div><div class="fg"><label class="fl">Investor</label><select class="fi" id="v-inv-name"><option value="">Select</option>${S.investors.map(i=>`<option value="${i.id}">${i.name}</option>`).join('')}</select></div><div class="fg"><label class="fl">Date</label><input class="fi" id="v-date" type="date"/></div><div class="fg"><label class="fl">Time</label><input class="fi" id="v-time" type="time" value="10:00"/></div><div class="fg full"><label class="fl">Notes</label><input class="fi" id="v-notes" placeholder="Any notes"/></div></div><div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="submitViewing()">Schedule</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);}
+async function submitViewing(){
+  const dealId=document.getElementById('v-deal').value;
+  const invId=document.getElementById('v-inv-name').value;
+  const vd=document.getElementById('v-date').value;
+  if(!dealId||!invId||!vd){toast('Fill all fields','err');return;}
+  const deal=S.deals.find(d=>d.id===dealId);
+  const inv=S.investors.find(i=>i.id===invId);
+  closeModal();
+  await saveViewing({deal_id:dealId,deal_title:deal?.title||'',investor_id:invId,investor_name:inv?.name||'',viewing_date:vd,viewing_time:document.getElementById('v-time').value,notes:document.getElementById('v-notes').value,status:'Pending'});
+  await loadAll();render();
+}
+
+// ── MARKETPLACE ───────────────────────────────────────────────────
+function renderMarketCard(deal,compact=false){
+  const isMatch=matchesProfile(deal,S.profile);
+  const hasRequested=S.matches.some(m=>m.deal_id===deal.id&&m.investor_profile_id===S.user?.id);
+  const title=deal.marketplace_title||deal.asset_type+' Asset';
+  const location=deal.location?deal.location.split(',')[0]+' Area':'UK / Europe';
+  const price=deal.price?'£'+Number(deal.price/1000000).toFixed(1)+'M':'POA';
+  return`<div class="market-card" onclick="showDealDetail('${deal.id}')">
+    <div class="market-card-header">
+      <div class="market-badge">
+        <span class="tag tag-blue">${deal.asset_type||'Property'}</span>
+        <span class="tag tag-muted">${deal.deal_stage||'For Sale'}</span>
+        ${isMatch?'<span class="tag tag-green">✓ Matches You</span>':''}
+      </div>
+      <div class="market-title">${title}</div>
+      <div class="market-location">📍 ${location}</div>
+    </div>
+    <div class="market-card-body">
+      <div class="market-metrics">
+        <div class="metric"><div class="metric-label">Price</div><div class="metric-value gold">${price}</div></div>
+        <div class="metric"><div class="metric-label">Yield</div><div class="metric-value green">${deal.expected_yield||'—'}%</div></div>
+        <div class="metric"><div class="metric-label">IRR</div><div class="metric-value">${deal.target_irr||'—'}%</div></div>
+      </div>
+      ${deal.marketplace_summary?`<div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px">${deal.marketplace_summary.slice(0,120)}${deal.marketplace_summary.length>120?'...':''}</div>`:''}
+    </div>
+    <div class="market-card-footer">
+      ${isMatch?'<span class="match-pill">✓ Matches your criteria</span>':'<span class="no-match-pill">View details</span>'}
+      ${hasRequested?'<span class="tag tag-amber">Intro Requested</span>':`<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();showIntroModal('${deal.id}','${deal.agent_id}')">Request Intro</button>`}
+    </div>
+  </div>`;
+}
+
+function renderMarketplace(){
+  const deals=S.marketDeals;
+  const matched=deals.filter(d=>matchesProfile(d,S.profile));
+  return`<div class="screen">
+    ${topbar('Deal Marketplace',deals.length+' opportunities · '+matched.length+' match your profile',`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button>`)}
+    <div class="content">
+      ${matched.length>0?`<div class="sec-header"><div class="sec-title">Matching Your Criteria</div><span class="tag tag-green">${matched.length} deals</span></div><div class="market-grid">${matched.map(d=>renderMarketCard(d)).join('')}</div><div class="sec-header" style="margin-top:8px"><div class="sec-title">All Opportunities</div></div>`:''}
+      ${deals.length===0?'<div class="card"><div class="empty"><div class="ico">◫</div><p>No deals on the marketplace yet.</p></div></div>':`<div class="market-grid">${deals.filter(d=>!matchesProfile(d,S.profile)).map(d=>renderMarketCard(d)).join('')}</div>`}
+    </div>
+  </div>`;
+}
+
+function renderMarketplaceAgent(){
+  return`<div class="screen">
+    ${topbar('Marketplace','Your listed deals & incoming requests')}
+    <div class="content">
+      <div class="sec-header"><div class="sec-title">My Listed Deals</div><button class="btn btn-ghost btn-sm" onclick="go('deals')">Manage →</button></div>
+      ${S.deals.filter(d=>d.listed_on_marketplace).length===0?`<div class="card" style="margin-bottom:20px"><div class="empty"><div class="ico">◫</div><p>No deals listed on marketplace yet.</p><div style="font-size:12px;color:var(--text2);margin-top:8px">When adding or editing a deal, toggle "List on Marketplace" to make it visible to investors.</div></div></div>`:`<div class="market-grid" style="margin-bottom:20px">${S.deals.filter(d=>d.listed_on_marketplace).map(d=>{const m=S.matches.filter(x=>x.deal_id===d.id);return`<div class="market-card"><div class="market-card-header"><div class="market-badge"><span class="tag tag-blue">${d.asset_type||'Property'}</span><span class="tag tag-green">Listed</span></div><div class="market-title">${d.marketplace_title||d.title}</div></div><div class="market-card-body"><div class="market-metrics"><div class="metric"><div class="metric-label">Price</div><div class="metric-value gold">${fmt(d.price)}</div></div><div class="metric"><div class="metric-label">Yield</div><div class="metric-value green">${d.expected_yield||'—'}%</div></div><div class="metric"><div class="metric-label">Intros</div><div class="metric-value">${m.length}</div></div></div></div><div class="market-card-footer"><span class="tag ${m.filter(x=>x.status==='Requested').length>0?'tag-amber':'tag-muted'}">${m.filter(x=>x.status==='Requested').length} pending intros</span><button class="btn btn-ghost btn-sm" onclick="showEditDealModal('${d.id}')">Edit</button></div></div>`;}).join('')}</div>`}
+    </div>
+  </div>`;
+}
+
+function showDealDetail(dealId){
+  const deal=S.marketDeals.find(d=>d.id===dealId)||S.deals.find(d=>d.id===dealId);if(!deal)return;
+  const isMatch=matchesProfile(deal,S.profile);
+  const hasRequested=S.matches.some(m=>m.deal_id===deal.id&&m.investor_profile_id===S.user?.id);
+  showModal(`<div class="modal-title">${deal.marketplace_title||deal.asset_type+' Opportunity'}</div>
+    <div class="market-badge" style="margin-bottom:14px"><span class="tag tag-blue">${deal.asset_type||'—'}</span><span class="tag tag-muted">${deal.deal_stage||'—'}</span>${isMatch?'<span class="tag tag-green">✓ Matches Your Criteria</span>':''}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="metric"><div class="metric-label">Price Range</div><div class="metric-value gold" style="font-size:14px">${deal.price?'£'+Number(deal.price/1000000).toFixed(1)+'M':'POA'}</div></div>
+      <div class="metric"><div class="metric-label">Yield</div><div class="metric-value green" style="font-size:14px">${deal.expected_yield||'—'}%</div></div>
+      <div class="metric"><div class="metric-label">Target IRR</div><div class="metric-value" style="font-size:14px">${deal.target_irr||'—'}%</div></div>
+    </div>
+    <div style="background:var(--navy);border-radius:8px;padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:6px">Location</div>
+      <div style="font-size:14px">📍 ${deal.location?deal.location.split(',')[0]+' Area':'UK / Europe'} ${deal.country?'· '+deal.country:''}</div>
+    </div>
+    ${deal.marketplace_summary?`<p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px">${deal.marketplace_summary}</p>`:''}
+    <div style="display:flex;gap:10px">
+      ${hasRequested?'<button class="btn btn-ghost" disabled>Intro Already Requested</button>':`<button class="btn btn-primary" onclick="closeModal();showIntroModal('${deal.id}','${deal.agent_id}')">Request Introduction →</button>`}
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+    </div>`);
+}
+
+function showIntroModal(dealId,agentId){
+  const deal=S.marketDeals.find(d=>d.id===dealId);
+  showModal(`<div class="modal-title">Request Introduction</div>
+    <div style="background:var(--navy);border-radius:8px;padding:12px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600">${deal?.marketplace_title||deal?.asset_type+' Opportunity'}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">${deal?.asset_type||''} · ${deal?.location?deal.location.split(',')[0]+' Area':'—'}</div>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">The agent will review your request. If approved, they will share their contact details with you.</p>
+    <div class="fg full" style="margin-bottom:14px">
+      <label class="fl">Message to Agent (optional)</label>
+      <textarea class="fi fi-ta" id="intro-msg" placeholder="Briefly explain why this deal interests you and your investment background..."></textarea>
+    </div>
+    <div style="background:var(--navy);border-radius:8px;padding:12px;margin-bottom:16px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:6px">Your contact details (shared if approved)</div>
+      <div style="font-size:13px">${S.profile?.full_name} · ${S.user?.email}</div>
+      ${S.profile?.investor_type?`<div style="font-size:12px;color:var(--text2)">${S.profile.investor_type}</div>`:''}
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="submitIntroRequest('${dealId}','${agentId}')">Send Request →</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+
+async function submitIntroRequest(dealId,agentId){
+  const msg=document.getElementById('intro-msg')?.value.trim()||'';
+  closeModal();
+  await requestIntro(dealId,agentId,msg);
+}
+
+// ── AGENT: INTRO REQUESTS ─────────────────────────────────────────
+function renderIntros(){
+  const myIntros=S.matches.filter(m=>m.agent_id===S.user?.id);
+  const pending=myIntros.filter(m=>m.status==='Requested');
+  const approved=myIntros.filter(m=>m.status==='Approved');
+  const declined=myIntros.filter(m=>m.status==='Declined');
+  return`<div class="screen">
+    ${topbar('Intro Requests',myIntros.length+' total · '+pending.length+' pending',`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button>`)}
+    <div class="content">
+      ${pending.length>0?`<div class="sec-header"><div class="sec-title">Needs Your Action</div><span class="nav-badge">${pending.length}</span></div>${pending.map(m=>{const deal=S.deals.find(d=>d.id===m.deal_id);return`<div class="notif-item" style="margin-bottom:12px"><div class="notif-dot"></div><div style="flex:1"><div class="notif-title">Investor requesting intro</div><div class="notif-meta">Deal: <strong>${deal?.title||'Unknown deal'}</strong></div>${m.investor_message?`<div style="font-size:12px;color:var(--text2);margin-top:4px;font-style:italic">"${m.investor_message}"</div>`:''}<div style="font-size:11px;color:var(--text2);margin-top:4px">Requested ${m.requested_at?new Date(m.requested_at).toLocaleDateString():''}</div></div><div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end"><button class="btn btn-success btn-sm" onclick="approveIntro('${m.id}')">✓ Approve</button><button class="btn btn-danger btn-sm" onclick="declineIntro('${m.id}')">Decline</button></div></div>`;}).join('')}<div style="margin-bottom:20px"></div>`:''}
+      ${approved.length>0?`<div class="sec-header"><div class="sec-title">Approved</div></div>${approved.map(m=>{const deal=S.deals.find(d=>d.id===m.deal_id);return`<div class="notif-item"><div class="notif-dot read"></div><div style="flex:1"><div class="notif-title">${deal?.title||'Deal'}</div><div class="notif-meta">Intro approved · ${m.approved_at?new Date(m.approved_at).toLocaleDateString():''}</div></div><span class="tag tag-green">Approved</span></div>`;}).join('')}`:''}
+      ${declined.length>0?`<div class="sec-header" style="margin-top:16px"><div class="sec-title">Declined</div></div>${declined.map(m=>{const deal=S.deals.find(d=>d.id===m.deal_id);return`<div class="notif-item"><div class="notif-dot read"></div><div style="flex:1"><div class="notif-title">${deal?.title||'Deal'}</div><div class="notif-meta">Intro declined</div></div><span class="tag tag-red">Declined</span></div>`;}).join('')}`:''}
+      ${myIntros.length===0?'<div class="card"><div class="empty"><div class="ico">↔</div><p>No intro requests yet.<br/>List your deals on the marketplace to start receiving them.</p></div></div>':''}
+    </div>
+  </div>`;
+}
+
+// ── INVESTOR: MY MATCHES ──────────────────────────────────────────
+function renderMyMatches(){
+  const myMatches=S.matches.filter(m=>m.investor_profile_id===S.user?.id);
+  const approved=myMatches.filter(m=>m.status==='Approved');
+  const pending=myMatches.filter(m=>m.status==='Requested');
+  return`<div class="screen">
+    ${topbar('My Matches',myMatches.length+' intro requests',`<button class="btn btn-ghost keep" onclick="loadAll()">↻</button>`)}
+    <div class="content">
+      ${approved.length>0?`<div class="sec-header"><div class="sec-title">Approved — Agent Contact Revealed</div></div>${approved.map(m=>{const deal=S.marketDeals.find(d=>d.id===m.deal_id);return`<div class="notif-item" style="background:var(--green-light);border-color:var(--green)"><div class="notif-dot" style="background:var(--green)"></div><div style="flex:1"><div class="notif-title" style="color:var(--green)">${deal?.marketplace_title||deal?.asset_type+' Opportunity'}</div><div class="notif-meta">Agent has approved your intro request</div><div style="margin-top:8px;background:var(--card);border-radius:8px;padding:10px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:4px">Agent Contact</div><div style="font-size:13px;font-weight:600">${REPLY_TO}</div><div style="font-size:12px;color:var(--text2)">Snayder Andrade · Nest Seekers International</div></div></div></div>`;}).join('')}<div style="margin-bottom:20px"></div>`:''}
+      ${pending.length>0?`<div class="sec-header"><div class="sec-title">Pending Agent Approval</div></div>${pending.map(m=>{const deal=S.marketDeals.find(d=>d.id===m.deal_id);return`<div class="notif-item"><div class="notif-dot"></div><div style="flex:1"><div class="notif-title">${deal?.marketplace_title||deal?.asset_type+' Opportunity'}</div><div class="notif-meta">Waiting for agent to approve your intro request</div>${m.investor_message?`<div style="font-size:12px;color:var(--text2);margin-top:4px;font-style:italic">"${m.investor_message}"</div>`:''}</div><span class="tag tag-amber">Pending</span></div>`;}).join('')}`:''}
+      ${myMatches.length===0?`<div class="card"><div class="empty"><div class="ico">⟡</div><p>No intro requests yet.<br/>Browse the marketplace and request introductions to deals that match your criteria.</p><br/><button class="btn btn-primary" onclick="go('marketplace')">Browse Marketplace →</button></div></div>`:''}
+    </div>
+  </div>`;
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────
+function renderProfile(){
+  const p=S.profile;const role=p?.role||'agent';
+  const assets=Array.isArray(p?.asset_preference)?p.asset_preference.join(', '):(p?.asset_preference||'');
+  const geos=Array.isArray(p?.geography)?p.geography.join(', '):(p?.geography||'');
+  return`<div class="screen">
+    ${topbar('My Profile','Account & preferences')}
+    <div class="content">
+      <div class="profile-hero">
+        <div class="profile-avatar-lg ${role}" style="background:${role==='investor'?'linear-gradient(135deg,var(--green),#2ECC71)':role==='admin'?'linear-gradient(135deg,var(--purple),#9B59B6)':'linear-gradient(135deg,var(--blue),var(--accent))'}">${initials(p?.full_name||'')}</div>
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:22px">${p?.full_name||'—'}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">${p?.email||''}</div>
+          <span class="user-role-badge ${role==='investor'?'role-investor':role==='admin'?'role-admin':'role-agent'}" style="margin-top:6px">${role}</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px"><div class="card-head">Basic Info</div><div class="card-body">
+        <div class="form-grid">
+          <div class="fg"><label class="fl">Full Name</label><input class="fi" id="p-name" value="${p?.full_name||''}"/></div>
+          <div class="fg"><label class="fl">Company / Agency</label><input class="fi" id="p-company" value="${p?.company||p?.agency_name||''}"/></div>
+          <div class="fg"><label class="fl">Phone</label><input class="fi" id="p-phone" value="${p?.phone||''}"/></div>
+          <div class="fg"><label class="fl">LinkedIn URL</label><input class="fi" id="p-linkedin" value="${p?.linkedin_url||''}"/></div>
+        </div>
+      </div></div>
+
+      ${role==='investor'?`
+      <div class="card" style="margin-bottom:14px"><div class="card-head">Investment Criteria</div><div class="card-body">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:14px">These criteria are used to match you with deals on the marketplace.</p>
+        <div class="form-grid">
+          <div class="fg"><label class="fl">Investor Type</label><select class="fi" id="p-itype"><option value="">Select</option>${['Family Office','Institutional Fund','UHNWI','HNW Individual','Private Investor','Developer','Fund / Private Equity','Operator / Hospitality'].map(t=>`<option ${p?.investor_type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+          <div class="fg"><label class="fl">Asset Preference (comma sep)</label><input class="fi" id="p-assets" value="${assets}" placeholder="Hospitality, Residential"/></div>
+          <div class="fg"><label class="fl">Geography (comma sep)</label><input class="fi" id="p-geo" value="${geos}" placeholder="UK, Italy"/></div>
+          <div class="fg"><label class="fl">Min Investment (£)</label><input class="fi" id="p-min" type="number" value="${p?.min_investment||''}"/></div>
+          <div class="fg"><label class="fl">Max Investment (£)</label><input class="fi" id="p-max" type="number" value="${p?.max_investment||''}"/></div>
+          <div class="fg"><label class="fl">Min Yield (%)</label><input class="fi" id="p-yield" type="number" value="${p?.min_yield||''}"/></div>
+          <div class="fg"><label class="fl">Min IRR (%)</label><input class="fi" id="p-irr" type="number" value="${p?.min_irr||''}"/></div>
+          <div class="fg full"><label class="fl">Contact Email (shown when intro approved)</label><input class="fi" id="p-contact-email" value="${p?.contact_email_public||p?.email||''}"/></div>
+        </div>
+      </div></div>`:''}
+
+      <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+      <button class="btn btn-ghost" style="margin-left:10px" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>`;
+}
+
+async function saveProfile(){
+  const role=S.profile?.role;
+  const updates={
+    full_name:document.getElementById('p-name')?.value.trim(),
+    company:document.getElementById('p-company')?.value.trim(),
+    agency_name:document.getElementById('p-company')?.value.trim(),
+    phone:document.getElementById('p-phone')?.value.trim(),
+    linkedin_url:document.getElementById('p-linkedin')?.value.trim(),
+  };
+  if(role==='investor'){
+    updates.investor_type=document.getElementById('p-itype')?.value;
+    updates.asset_preference=document.getElementById('p-assets')?.value.split(',').map(s=>s.trim()).filter(Boolean);
+    updates.geography=document.getElementById('p-geo')?.value.split(',').map(s=>s.trim()).filter(Boolean);
+    updates.min_investment=parseFloat(document.getElementById('p-min')?.value)||null;
+    updates.max_investment=parseFloat(document.getElementById('p-max')?.value)||null;
+    updates.min_yield=parseFloat(document.getElementById('p-yield')?.value)||null;
+    updates.min_irr=parseFloat(document.getElementById('p-irr')?.value)||null;
+    updates.contact_email_public=document.getElementById('p-contact-email')?.value.trim();
+  }
+  await updateProfile(updates);
+}
+
+// ── BULK IMPORT ───────────────────────────────────────────────────
+const INVESTORS_DATA=[{name:"Kaan Ozturk (Privilege Developments)",email:"kaan@dervisoglu.com",investor_type:"Developer",asset_preference:[],geography:[],min_investment:null,max_investment:null,min_yield:null,min_irr:null,status:"Active",notes:"European Investor"},{name:"Lee (Tay Developments)",email:"lee@taydevelopments.co.uk",investor_type:"Developer",asset_preference:["Residential","Mixed-Use"],geography:["London","Home Counties"],min_investment:500000,max_investment:3000000,status:"Active"},{name:"Michael Posner (M Real Estate)",email:"michael@mrealestate.co.uk",investor_type:"Developer",asset_preference:["Residential","Mixed-Use"],geography:["North London"],max_investment:5000000,status:"Active"},{name:"Alexander Hogge (Sennia Group)",email:"alex@senniagroup.co.uk",investor_type:"Developer / Investor-Operator",asset_preference:["Residential","Mixed-Use"],geography:["Slough","Home Counties","Greater London"],min_investment:1000000,max_investment:10000000,status:"Active"},{name:"Shmuel Hoffman (Hoffland Estate)",email:"info@hofflandestate.co.uk",investor_type:"Private Investor",asset_preference:["Residential","Mixed-Use"],geography:["London"],status:"Active"},{name:"Felipe (Rio Capital)",email:"Felipe@riocapital.pt",investor_type:"Private Capital",asset_preference:["Commercial","Residential","Mixed-Use"],geography:["Central London","Zone 2"],min_investment:2000000,max_investment:20000000,min_irr:17,status:"Active"},{name:"Alex Horton (Tolaxis)",email:"alex.horton@tolaxis.com",investor_type:"Developer / Investor-Operator",asset_preference:["Retail","Commercial","Mixed-Use","Residential"],geography:["London","Birmingham","Manchester","Leeds","Bristol"],min_investment:10000000,max_investment:50000000,status:"Active"},{name:"Ciaran (Citigrove Developers)",email:"ciaranjordan@citygrove.com",investor_type:"Developer",asset_preference:["Residential","Commercial","Hospitality","Mixed-Use"],geography:["UK","Europe","Germany"],min_investment:10000000,status:"Active"},{name:"Jean-Christophe Avellaneda (Sofidy)",email:"javellaneda@sofidy.com",investor_type:"Fund / Asset Management Firm",asset_preference:["Commercial","Residential","Mixed-Use"],geography:["London","Birmingham","Italy"],min_investment:15000000,max_investment:50000000,min_yield:7.5,status:"Active"},{name:"Aleix (AX Partners Fund)",email:"aleix@axpartners.fund",investor_type:"Fund / Private Equity Real Estate",asset_preference:["Hospitality","Residential","Mixed-Use","Commercial"],geography:["Spain","Europe","Mediterranean"],min_investment:5000000,max_investment:50000000,status:"Active"},{name:"Baptiste (Airelles)",email:"b.prats@airelles.com",investor_type:"Operator / Hospitality Brand",asset_preference:["Hospitality","Luxury Hotels"],geography:["London","Paris","Rome","Florence","Lake Como"],min_investment:30000000,max_investment:200000000,status:"Active"},{name:"Enrico Fantini (OM Developments)",email:"enrico@gerentgroup.io",investor_type:"Developer / Operator / Hospitality Brand",asset_preference:["Hospitality","Residential","Mixed-Use"],geography:["London","Europe"],min_investment:20000000,max_investment:200000000,status:"Active"},{name:"Nicholas Cowell (Cowell Group)",email:"n.cowell@cowellgroup.net",investor_type:"Developer",asset_preference:["Residential","Mixed-Use","BTR","PBSA","Commercial"],geography:["London","South East","Birmingham"],min_investment:5000000,max_investment:25000000,status:"Active"},{name:"Christophe Pokk (Novel Capital)",email:"c.pokk@novelcapital.co.uk",investor_type:"Fund / Private Equity",asset_preference:["Residential","Commercial","Mixed-Use"],geography:["UK","Europe"],min_investment:5000000,max_investment:200000000,status:"Active"},{name:"Zara Adams (Fair Value Capital)",email:"zara@fairvaluecapital.co.uk",investor_type:"Fund / Real Estate Investment",asset_preference:["Hospitality","PBSA","Mixed-Use","Commercial"],geography:["UK","Europe"],min_investment:5000000,max_investment:50000000,min_yield:6.5,min_irr:10,status:"Active"},{name:"Hanif Bhimji (Kaz Hotels)",email:"Hanif@kazhotels.co.uk",investor_type:"Operator / Hospitality Owner",asset_preference:["Hospitality"],geography:["London"],min_investment:1000000,max_investment:5000000,status:"Active"},{name:"Karim Janmohamed (Karali Group)",email:"Karim@karalionline.co.uk",investor_type:"Fund / Investment Group",asset_preference:["Residential","Mixed-Use","Commercial"],geography:["UK","Europe"],min_investment:5000000,max_investment:50000000,status:"Active"},{name:"Dion Michael (Grosvenor Hill)",email:"Dion@grosvenor-hill.com",investor_type:"Fund / Asset Manager",asset_preference:["Residential","Mixed-Use","Commercial","Logistics"],geography:["UK","Europe"],status:"Active"},{name:"Steven Hag (Capax Capital)",email:"Steven.haag@capaxcapital.co.uk",investor_type:"Fund",asset_preference:["Residential","Commercial","Mixed-Use"],geography:["London"],status:"Active"},{name:"Sebastian Oliver (Mayfair Private Office)",email:"seb@mayfairprivateoffice.co.uk",investor_type:"Single Family Office",asset_preference:["Residential","Mixed-Use","Commercial"],geography:["UK","London","Europe"],min_investment:3000000,max_investment:25000000,min_yield:7,min_irr:10,status:"Active"},{name:"Joseph Wolley",email:null,investor_type:"Private Investor",asset_preference:["Residential","Mixed-Use"],geography:["London"],min_investment:10000000,max_investment:10000000,status:"Active"},{name:"Matthew Cookson (City Aparts)",email:"Mcookson@cityaparts.com",investor_type:"Developer / Operator",asset_preference:["Residential","PBSA","BTR","Mixed-Use"],geography:["UK","London"],min_investment:3000000,max_investment:15000000,status:"Active"},{name:"Joao Pagani Toscano (Pagani Capital)",email:"Joao.toscano@livinggroup.com.pt",investor_type:"Investment / Asset Manager",asset_preference:["Residential","Mixed-Use","Commercial"],geography:["UK","Europe"],min_investment:5000000,max_investment:50000000,min_irr:12,status:"Active"},{name:"Thom Lloyd (Zenzic Capital)",email:"tlj@zenziccapital.com",investor_type:"Real Estate Credit / Investment Manager",asset_preference:["Residential","Commercial","Hospitality","Logistics","PBSA"],geography:["UK","Western Europe"],min_investment:10000000,max_investment:70000000,min_irr:10,status:"Active"},{name:"Dogan Karalar (Kreado)",email:"Dk@kreado.co.uk",investor_type:"Developer",asset_preference:[],geography:[],status:"Active"},{name:"First Net Zero",email:"dylan@firstnetzero.com",investor_type:"Fund / Private Equity",asset_preference:["Sustainable Infrastructure","Net Zero Real Assets"],geography:["Europe"],min_investment:5000000,max_investment:100000000,status:"Active"},{name:"Alex Enache (LGH Hotels)",email:"Alex.enache@lghhm.com",investor_type:"Operator / Hospitality",asset_preference:["Hospitality"],geography:["UK"],min_investment:1000000,max_investment:10000000,status:"Active"},{name:"Alex Enache (Tenergy Group)",email:"Alex.enache2@lghhm.com",investor_type:"Property Investment / Developer",asset_preference:["Commercial","Mixed-Use","Retail","Residential"],geography:["UK","London","South East"],min_investment:2000000,max_investment:20000000,min_yield:6,min_irr:12,status:"Active"},{name:"Anthony Jackson (Martin Property Group)",email:"ajackson@martin-group.co.uk",investor_type:"Developer / Property Investment",asset_preference:["Commercial","Retail","Hospitality","Residential","Mixed-Use"],geography:["UK","Ireland"],min_investment:3000000,max_investment:25000000,min_irr:12,status:"Active"},{name:"Oren Saada (BOHOPO Group)",email:"oren@bohopo.com",investor_type:"Hospitality Operator",asset_preference:["Hospitality","Mixed-Use"],geography:["Europe","Athens","Brussels","Paris","Milan"],min_investment:3000000,max_investment:20000000,status:"Active"},{name:"Fouad Chehab & Samuel Benais (Maya Private Capital)",email:null,investor_type:"Fund",asset_preference:["Residential","Commercial","Mixed-Use"],geography:["Europe"],min_investment:20000000,max_investment:200000000,status:"Active"},{name:"Simba (Stay Urban Rest)",email:"simba@stayurbanrest.com",investor_type:"Private Investor",asset_preference:["Hospitality"],geography:["UK"],status:"Active"}];
+
+function showImportModal(){
+  showModal(`<div class="modal-title">⬆ Import 32 Investors</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Imports all 32 investors into your private database.</p>
+    <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span id="imp-lbl">Ready</span><span id="imp-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="imp-prog" style="width:0%"></div></div></div>
+    <div class="send-log" id="imp-log"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" id="imp-btn" onclick="runBulkImport()">▶ Import All 32</button>
+      <button class="btn btn-ghost" id="imp-close" onclick="closeModal();loadAll();render()" disabled>Done</button>
+    </div>`);
+}
+
+async function runBulkImport(){
+  document.getElementById('imp-btn').disabled=true;
+  function log(msg,type='info'){const el=document.getElementById('imp-log');if(!el)return;const d=document.createElement('div');d.className='send-log-line '+type;d.textContent='['+new Date().toLocaleTimeString()+'] '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+  let ok=0,fail=0;
+  log('Importing '+INVESTORS_DATA.length+' investors...','info');
+  for(let i=0;i<INVESTORS_DATA.length;i++){
+    try{
+      const{error}=await sb.from('investors').insert([{...INVESTORS_DATA[i],agent_id:S.user.id}]);
+      if(error)throw error;ok++;log('✓ '+INVESTORS_DATA[i].name,'ok');
+    }catch(e){fail++;log('✗ '+INVESTORS_DATA[i].name+': '+e.message,'err');}
+    const pct=Math.round(((i+1)/INVESTORS_DATA.length)*100);
+    const p=document.getElementById('imp-prog');const pp=document.getElementById('imp-pct');const pl=document.getElementById('imp-lbl');
+    if(p)p.style.width=pct+'%';if(pp)pp.textContent=pct+'%';if(pl)pl.textContent=(i+1)+' of '+INVESTORS_DATA.length;
+    await new Promise(r=>setTimeout(r,120));
+  }
+  log('Done. '+ok+' imported, '+fail+' failed.',ok>0?'ok':'err');
+  const cb=document.getElementById('imp-close');if(cb)cb.disabled=false;
+  toast(ok+' investors imported ✓','ok');
+}
+
+// ── MAIN RENDER ───────────────────────────────────────────────────
+function render(){
+  const role=S.profile?.role||'agent';
+  if(!S.user){renderAuth();return;}
+  if(S.loading){
+    document.getElementById('root').innerHTML=`<div class="loading-screen"><div class="spinner"></div><div>Loading PropMatch...</div></div>`;
+    return;
+  }
+  const screens={
+    dashboard:renderDashboard,
+    deals:renderDeals,
+    'add-deal':renderAddDeal,
+    investors:renderInvestors,
+    matching:renderMatching,
+    viewings:renderViewings,
+    marketplace:renderMarketplace,
+    'marketplace-agent':renderMarketplaceAgent,
+    intros:renderIntros,
+    'my-matches':renderMyMatches,
+    profile:renderProfile,
+  };
+  const screenFn=screens[S.screen]||renderDashboard;
+  document.getElementById('root').innerHTML=`
+    <div class="app">
+      ${renderSidebar()}
+      <div class="main">
+        ${screenFn()}
+        ${renderBottomNav()}
+      </div>
+    </div>`;
+  document.getElementById('overlay').onclick=closeSidebar;
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────
+(async()=>{
+  render();
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){
+    S.user=session.user;
+    await loadProfile();
+    await loadAll();
+  } else {
+    renderAuth();
+  }
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='SIGNED_IN'&&session){S.user=session.user;await loadProfile();await loadAll();}
+    if(event==='SIGNED_OUT'){S.user=null;S.profile=null;renderAuth();}
+  });
+})();
+</script>
+</body>
+</html>
